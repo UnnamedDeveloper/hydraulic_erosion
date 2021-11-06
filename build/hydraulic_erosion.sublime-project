@@ -68,6 +68,18 @@
 			"file_regex": "^(..[^:]*)(?::|\\()([0-9]+)(?::|\\))(?:([0-9]+):)?\\s*(.*)"
 		},
 		{
+			"name": "GLAD - glad",
+			"cmd": ["/usr/bin/make", "-f", "Makefile", "glad"],
+			"working_dir": "${project_path}",
+			"file_regex": "^(..[^:]*)(?::|\\()([0-9]+)(?::|\\))(?:([0-9]+):)?\\s*(.*)"
+		},
+		{
+			"name": "GLAD - glad/fast",
+			"cmd": ["/usr/bin/make", "-f", "Makefile", "glad/fast"],
+			"working_dir": "${project_path}",
+			"file_regex": "^(..[^:]*)(?::|\\()([0-9]+)(?::|\\))(?:([0-9]+):)?\\s*(.*)"
+		},
+		{
 			"name": "GLFW - uninstall",
 			"cmd": ["/usr/bin/make", "-f", "Makefile", "uninstall"],
 			"working_dir": "${project_path}",

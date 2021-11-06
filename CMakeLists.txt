@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 project(hydraulic_erosion VERSION 0.1.0 LANGUAGES C)
 
+add_subdirectory("deps/glad")
 add_subdirectory("deps/glfw")
 
 add_executable(${PROJECT_NAME}
 	"src/main.c"
 	"src/debug/assert.h" "src/debug/assert.c"
-	"src/gfx/window.h" "src/gfx/window.c")
+	"src/gfx/context.h" "src/gfx/context.c" "src/gfx/window.h" "src/gfx/window.c")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	C_STANDARD 99
@@ -16,4 +17,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_include_directories(${PROJECT_NAME} PRIVATE "src")
 
+target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
