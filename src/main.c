@@ -11,8 +11,7 @@ int main()
 
 	window_t *window = window_create(&(window_desc_t){
 		.title = "Hydraulic Erosion",
-		.width = 1280,
-		.height = 720,
+		.size = { 1280, 720 },
 	});
 
 	context_bind(window->context);

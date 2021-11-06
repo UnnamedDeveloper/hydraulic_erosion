@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 project(hydraulic_erosion VERSION 0.1.0 LANGUAGES C)
 
+add_subdirectory("deps/cglm")
 add_subdirectory("deps/glad")
 add_subdirectory("deps/glfw")
 
@@ -17,5 +18,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_include_directories(${PROJECT_NAME} PRIVATE "src")
 
+target_link_libraries(${PROJECT_NAME} PRIVATE cglm)
 target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)

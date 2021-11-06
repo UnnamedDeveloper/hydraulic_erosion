@@ -1,12 +1,6 @@
-###EXECUTABLE FILE###
-hydraulic_erosion
-hydraulic_erosion.exe
-hydraulic_erosion.app
-
-
 ###Buildfiles###
-[Bb]in/deps/
-[Bb]uild/deps/
+**/[Bb]in/
+**/[Bb]uild/
 
 
 ###SublimeText###
