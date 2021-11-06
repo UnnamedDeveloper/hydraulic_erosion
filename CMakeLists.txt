@@ -8,7 +8,7 @@ add_subdirectory("deps/glfw")
 add_executable(${PROJECT_NAME}
 	"src/main.c"
 	"src/debug/assert.h" "src/debug/assert.c"
-	"src/gfx/context.h" "src/gfx/context.c" "src/gfx/window.h" "src/gfx/window.c")
+	"src/gfx/buffer.h" "src/gfx/buffer.c" "src/gfx/context.h" "src/gfx/context.c" "src/gfx/window.h" "src/gfx/window.c")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	C_STANDARD 99

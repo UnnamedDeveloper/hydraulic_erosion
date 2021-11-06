@@ -51,22 +51,38 @@ void context_free(context_t *context)
 	// unbind context as current
 	if (cur_context == context)
 		context_bind(NULL);
-	
+
 	free(context);
 }
 
 context_t *context_bind(context_t *context)
 {
+	// bind context
+	context_t *last_ctx = cur_context;
+	cur_context = context;
+
 	if (context != NULL)
 	{
 		glfwMakeContextCurrent(context->window->glfw_window);
+
+		if (glad_loaded)
+		{
+			// bind context objects
+			for (int i = 0; i < BUFFER_TYPE_COUNT__; i++)
+			{
+				buffer_bind_to((buffer_type_t)i, cur_context->cur_buffers[i]);
+			}
+		}
 	}
 	else
 	{
 		glfwMakeContextCurrent(NULL);
 	}
 
-	context_t *last_ctx = cur_context;
-	cur_context = context;
 	return last_ctx;
+}
+
+context_t *context_get_bound(void)
+{
+	return cur_context;
 }

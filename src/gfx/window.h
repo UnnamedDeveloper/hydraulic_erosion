@@ -2,8 +2,10 @@
 #define __gfx_window_h__
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <cglm/cglm.h>
+#include <glad/glad.h> // this file includes context.h, which includes buffer.h, which includes glad.h, which must be included before glfw3.h. oh boy...
 #include <GLFW/glfw3.h>
 
 #include "context.h"
