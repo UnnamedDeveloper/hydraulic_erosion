@@ -17,19 +17,33 @@ static GLenum get_gl_buffer_target(buffer_type_t type)
 	};
 }
 
+static GLenum get_gl_buffer_usage(buffer_usage_t usage)
+{
+	switch (usage)
+	{
+	default:
+	case BUFFER_USAGE_STATIC:
+		return GL_STATIC_DRAW;
+	case BUFFER_USAGE_DYNAMIC:
+		return GL_DYNAMIC_DRAW;
+	};
+}
+
 void buffer_init(const buffer_desc_t *desc, buffer_t **buffer)
 {
-	HE_ASSERT(desc != NULL);
 	HE_ASSERT(buffer != NULL);
+	HE_ASSERT(desc != NULL);
+	HE_ASSERT(desc->type >= 0 < BUFFER_TYPE_COUNT__);
+	HE_ASSERT(desc->usage >= 0 < BUFFER_USAGE_COUNT__);
 
 	buffer_t *result = calloc(1, sizeof(buffer_t));
 
 	glCreateBuffers(1, &result->id);
 	result->type = desc->type;
+	result->usage = desc->usage;
 
-	buffer_t *last_buf = buffer_bind(result);
-	glBufferData(get_gl_buffer_target(result->type), desc->size, desc->data, GL_STATIC_DRAW);
-	buffer_bind(last_buf);
+	if (desc->size > 0)
+		buffer_set_data(result, desc->size, desc->data);
 
 	*buffer = result;
 }
@@ -79,4 +93,17 @@ buffer_t *buffer_bind_to(buffer_type_t to, buffer_t *buffer)
 	buffer_t *last_buf = ctx->cur_buffers[to];
 	ctx->cur_buffers[to] = buffer;
 	return last_buf;
+}
+
+void buffer_set_data(buffer_t *buffer, size_t size, void *data)
+{
+	HE_ASSERT(buffer != NULL);
+
+	// bind buffer
+	buffer_t *last_buf = buffer_bind(buffer);
+
+	glBufferData(get_gl_buffer_target(buffer->type), size, data, get_gl_buffer_usage(buffer->usage));
+
+	// restore previous buffer
+	buffer_bind(last_buf);
 }

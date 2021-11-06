@@ -42,12 +42,14 @@ int main()
 		.size = sizeof(vertices),
 		.data = vertices,
 		.type = BUFFER_TYPE_VERTEX,
+		.usage = BUFFER_USAGE_STATIC,
 	});
 
 	buffer_t *index_data = buffer_create(&(buffer_desc_t){
 		.size = sizeof(indices),
 		.data = indices,
 		.type = BUFFER_TYPE_INDEX,
+		.usage = BUFFER_USAGE_STATIC,
 	});
 
 	buffer_bind(vertex_data);
