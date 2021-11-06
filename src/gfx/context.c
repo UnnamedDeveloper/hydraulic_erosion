@@ -48,6 +48,10 @@ context_t *context_create(const context_desc_t *desc)
 
 void context_free(context_t *context)
 {
+	// unbind context as current
+	if (cur_context == context)
+		context_bind(NULL);
+	
 	free(context);
 }
 

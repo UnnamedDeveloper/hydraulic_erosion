@@ -33,6 +33,7 @@ window_t *window_create(const window_desc_t *desc)
 
 void window_free(window_t *window)
 {
+	context_free(window->context);
 	glfwDestroyWindow(window->glfw_window);
 	free(window);
 }

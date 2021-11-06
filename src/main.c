@@ -25,5 +25,7 @@ int main()
 	}
 
 	window_free(window);
+
+	glfwTerminate();
 	return 0;
 }
