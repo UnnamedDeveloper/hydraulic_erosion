@@ -8,18 +8,9 @@
 #include <glad/glad.h> // this file includes context.h, which includes buffer.h, which includes glad.h, which must be included before glfw3.h. oh boy...
 #include <GLFW/glfw3.h>
 
+#include "math/types.h"
 #include "context.h"
 
-typedef struct uvec2
-{
-	union
-	{
-		uint32_t size[2];
-		struct { uint32_t width, height; };
-		struct { uint32_t w, h; };
-		struct { uint32_t x, y; };
-	};
-} uvec2;
 
 typedef struct window_desc_t
 {

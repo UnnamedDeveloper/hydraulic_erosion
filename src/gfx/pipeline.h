@@ -4,8 +4,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <cglm/cglm.h>
 #include <glad/glad.h>
 
+#include "math/types.h"
+#include "image.h"
 #include "renderer.h"
 
 typedef enum shader_type_t
@@ -68,6 +71,7 @@ typedef struct pipeline_layout_desc_t
 typedef enum pipeline_uniform_type_t
 {
 	UNIFORM_TYPE_NONE,
+	UNIFORM_TYPE_FLOAT,
 	UNIFORM_TYPE_MAT4,
 	UNIFORM_TYPE_COUNT__,
 } pipeline_uniform_type_t;
@@ -89,12 +93,24 @@ typedef struct pipeline_uniform_t
 	pipeline_uniform_type_t type;
 } pipeline_uniform_t;
 
+typedef struct pipeline_image_desc_t
+{
+	const char *name;
+	image_type_t type;
+} pipeline_image_desc_t;
+
+typedef struct pipeline_image_layout_desc_t
+{
+	pipeline_image_desc_t location[IMAGE_MAX_BINDINGS__];
+} pipeline_image_layout_desc_t;
+
 typedef struct pipeline_desc_t
 {
 	shader_t *vs;
 	shader_t *fs;
 	pipeline_layout_desc_t layout;
 	pipeline_uniform_layout_desc_t uniforms;
+	pipeline_image_layout_desc_t images;
 	primitive_type_t primitive_type;
 } pipeline_desc_t;
 
@@ -111,6 +127,8 @@ pipeline_t *pipeline_create(const pipeline_desc_t *desc);
 void pipeline_free(pipeline_t *pipeline);
 
 pipeline_t *pipeline_bind(pipeline_t *pipeline);
-void pipeline_set_uniform(pipeline_t *pipeline, int location, void *data);
+
+void pipeline_set_uniformf(pipeline_t *pipeline, int location, float data);
+void pipeline_set_uniform_mat4(pipeline_t *pipeline, int location, mat4 data);
 
 #endif /* __gfx_pipeline_h__ */

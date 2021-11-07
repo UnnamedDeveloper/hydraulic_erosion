@@ -66,6 +66,15 @@ static GLenum get_attrib_gl_type(pipeline_attrib_type_t type)
 	};
 }
 
+static void validate_uniform_function(pipeline_t *pipeline, int location, pipeline_uniform_type_t type)
+{
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(pipeline != NULL, "Cannot set uniform of NULL");
+	HE_ASSERT(type == pipeline->uniforms[location].type, "Cannot set uniform to value of different type");
+	HE_ASSERT(0 <= location < PIPELINE_MAX_UNIFORMS__, "Cannot set uniform outside pipeline bounds");
+}
+
 bool shader_init(const shader_desc_t *desc, shader_t **shader)
 {
 	context_t *ctx = context_get_bound();
@@ -153,6 +162,15 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 		result->uniforms[i].type = type;
 	}
 
+	// bind images to correct units
+	pipeline_t *last_pip = pipeline_bind(result);
+	for (int i = 0; i < IMAGE_MAX_BINDINGS__; i++)
+	{
+		if (desc->images.location[i].type == IMAGE_TYPE_NONE) break;
+		glUniform1i(glGetUniformLocation(result->id, desc->images.location[i].name), i);
+	}
+	pipeline_bind(last_pip);
+
 	*pipeline = result;
 	return true;
 }
@@ -211,21 +229,18 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 	return last_pip;
 }
 
-void pipeline_set_uniform(pipeline_t *pipeline, int location, void *data)
+void pipeline_set_uniformf(pipeline_t *pipeline, int location, float data)
 {
-	context_t *ctx = context_get_bound();
-	HE_ASSERT(ctx != NULL, "A bound context is required");
-	HE_ASSERT(pipeline != NULL, "Cannot set uniform of NULL");
-	HE_ASSERT(0 <= location < PIPELINE_MAX_UNIFORMS__, "Cannot set uniform outside pipeline bounds");
-
+	validate_uniform_function(pipeline, location, UNIFORM_TYPE_FLOAT);
 	pipeline_t *last_pip = pipeline_bind(pipeline);
+	glUniform1f(pipeline->uniforms[location].gl_location, data);
+	pipeline_bind(last_pip);
+}
 
-	switch (pipeline->uniforms[location].type)
-	{
-	case UNIFORM_TYPE_MAT4:
-		glUniformMatrix4fv(pipeline->uniforms[location].gl_location, 1, false, data);
-		break;
-	};
-
+void pipeline_set_uniform_mat4(pipeline_t *pipeline, int location, mat4 data)
+{
+	validate_uniform_function(pipeline, location, UNIFORM_TYPE_MAT4);
+	pipeline_t *last_pip = pipeline_bind(pipeline);
+	glUniformMatrix4fv(pipeline->uniforms[location].gl_location, 1, false, (float *)data);
 	pipeline_bind(last_pip);
 }

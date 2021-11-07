@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "buffer.h"
+#include "image.h"
 #include "pipeline.h"
 
 // it must be done; c does not allow circular dependencies
@@ -22,6 +23,7 @@ typedef struct context_t
 	window_t *window;
 
 	buffer_t *cur_buffers[BUFFER_TYPE_COUNT__];
+	image_t *cur_images[IMAGE_MAX_BINDINGS__];
 	pipeline_t *cur_pipeline;
 } context_t;
 
