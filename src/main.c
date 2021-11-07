@@ -6,6 +6,7 @@
 
 #include "debug/assert.h"
 #include "gfx/buffer.h"
+#include "gfx/pipeline.h"
 #include "gfx/window.h"
 
 #define ARRAY_LENGTH(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
@@ -56,18 +57,52 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), 0);
 	glEnableVertexAttribArray(0);
 
+	// create shader pipeline
+	const char *vs_source =
+		"#version 330 core\n"
+		"layout(location = 0) in vec3 i_pos;\n"
+		"void main() {\n"
+		"	gl_Position = vec4(i_pos, 1.0);\n"
+		"}\n";
+
+	const char *fs_source =
+		"#version 330 core\n"
+		"layout(location = 0) out vec4 o_col;\n"
+		"void main() {\n"
+		"	o_col = vec4(1.0, 0.0, 1.0, 1.0);\n"
+		"}\n";
+
+	shader_t *vs_shader = shader_create(&(shader_desc_t){
+		.source = vs_source,
+		.type = SHADER_TYPE_VERTEX,
+	});
+
+	shader_t *fs_shader = shader_create(&(shader_desc_t){
+		.source = fs_source,
+		.type = SHADER_TYPE_FRAGMENT,
+	});
+	
+	pipeline_t *pipeline = pipeline_create(&(pipeline_desc_t){
+		.vs = vs_shader,
+		.fs = fs_shader,
+	});
+
 	// main loop
-	glClearColor(1, 0, 1, 1);
+	glClearColor(1, 1, 0, 1);
 	while (window_process_events(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		buffer_bind(vertex_data);
 		buffer_bind(index_data);
+		pipeline_bind(pipeline);
 		glDrawElements(GL_TRIANGLES, ARRAY_LENGTH(indices), GL_UNSIGNED_INT, 0);
 		window_swap_buffers(window);
 	}
 
 	// free resources
+	shader_free(vs_shader);
+	shader_free(fs_shader);
+	pipeline_free(pipeline);
 	buffer_free(vertex_data);
 	buffer_free(index_data);
 

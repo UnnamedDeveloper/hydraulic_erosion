@@ -33,8 +33,8 @@ void buffer_init(const buffer_desc_t *desc, buffer_t **buffer)
 {
 	HE_ASSERT(buffer != NULL);
 	HE_ASSERT(desc != NULL);
-	HE_ASSERT(desc->type >= 0 < BUFFER_TYPE_COUNT__);
-	HE_ASSERT(desc->usage >= 0 < BUFFER_USAGE_COUNT__);
+	HE_ASSERT(0 <= desc->type < BUFFER_TYPE_COUNT__);
+	HE_ASSERT(0 <= desc->usage < BUFFER_USAGE_COUNT__);
 
 	buffer_t *result = calloc(1, sizeof(buffer_t));
 
@@ -57,6 +57,8 @@ buffer_t *buffer_create(const buffer_desc_t *desc)
 
 void buffer_free(buffer_t *buffer)
 {
+	if (buffer == NULL) return;
+
 	context_t *ctx = context_get_bound();
 	if (ctx->cur_buffers[buffer->type] == buffer)
 		buffer_bind(NULL);
@@ -86,7 +88,7 @@ buffer_t *buffer_bind_to(buffer_type_t to, buffer_t *buffer)
 	}
 	else
 	{
-		glBindBuffer(get_gl_buffer_target(to), 0);
+		glBindBuffer(get_gl_buffer_target(to), BUFFER_DEFAULT__);
 	}
 
 	context_t *ctx = context_get_bound();

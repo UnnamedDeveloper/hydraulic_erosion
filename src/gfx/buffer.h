@@ -5,6 +5,8 @@
 
 #include <glad/glad.h>
 
+#define BUFFER_DEFAULT__ (0)
+
 typedef enum buffer_type_t
 {
 	BUFFER_TYPE_VERTEX,

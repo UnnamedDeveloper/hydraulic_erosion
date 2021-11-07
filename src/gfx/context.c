@@ -48,6 +48,8 @@ context_t *context_create(const context_desc_t *desc)
 
 void context_free(context_t *context)
 {
+	if (context == NULL) return;
+
 	// unbind context as current
 	if (cur_context == context)
 		context_bind(NULL);
@@ -76,7 +78,7 @@ context_t *context_bind(context_t *context)
 	}
 	else
 	{
-		glfwMakeContextCurrent(NULL);
+		glfwMakeContextCurrent(CONTEXT_DEFAULT__);
 	}
 
 	return last_ctx;
