@@ -14,6 +14,7 @@ void window_init(const window_desc_t *desc, window_t **window)
 	glfwDefaultWindowHints();
 	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 	glfwWindowHint(GLFW_RESIZABLE, desc->resizable);
+	glfwWindowHint(GLFW_SAMPLES, desc->samples);
 
 	result->glfw_window = glfwCreateWindow(desc->w, desc->h, desc->title, NULL, NULL);
 

@@ -20,6 +20,8 @@ typedef struct window_desc_t
 		struct { uint32_t w, h; };
 	};
 	bool resizable;
+
+	uint8_t samples;
 } window_desc_t;
 
 typedef struct window_t
