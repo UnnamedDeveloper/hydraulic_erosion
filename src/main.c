@@ -27,6 +27,7 @@ int main()
 		.title = "Hydraulic Erosion",
 		.size = { 1280, 720 },
 		.samples = 16,
+		.resizable = true,
 	});
 
 	context_bind(window->context);
@@ -106,6 +107,9 @@ int main()
 	// main loop
 	while (window_process_events(window))
 	{
+		uvec2 size = window_get_size(window);
+		renderer_set_viewport(0, 0, size.w, size.h);
+
 		renderer_clear(&(cmd_clear_desc_t){ .color = { 1.0f, 1.0f, 1.0f, 1.0f }, });
 
 		buffer_bind(vertex_data);
@@ -119,7 +123,6 @@ int main()
 		glm_translate(view, (vec3){ 0.0f, 0.0f, -3.0f });
 
 		mat4 projection = GLM_MAT4_IDENTITY_INIT;
-		uvec2 size = window_get_size(window);
 		glm_perspective(glm_rad(70.0f), (float)size.w / (float)size.h, 0.1f, 1000.0f, projection);
 
 		pipeline_set_uniform(pipeline, 0, model);

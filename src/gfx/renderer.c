@@ -22,12 +22,19 @@ static GLenum get_gl_primitive_type(primitive_type_t type)
 	};
 }
 
+void renderer_set_viewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	glViewport(x, y, w, h);
+}
+
 void renderer_clear(cmd_clear_desc_t *cmd)
 {
 	context_t *ctx = context_get_bound();
 	HE_ASSERT(ctx != NULL, "A bound context is required");
 	glClearColor(cmd->color[0], cmd->color[1], cmd->color[2], cmd->color[3]);
-	glad_glClearDepth(cmd->depth);
+	glClearDepth(cmd->depth);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
