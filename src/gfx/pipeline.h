@@ -34,6 +34,7 @@ void shader_free(shader_t *shader);
 #define PIPELINE_DEFAULT__ (0)
 
 #define PIPELINE_MAX_ATTRIBS__ (GL_MAX_VERTEX_ATTRIBS)
+#define PIPELINE_MAX_UNIFORMS__ (GL_MAX_UNIFORM_LOCATIONS)
 
 typedef enum pipeline_attrib_type_t
 {
@@ -64,11 +65,36 @@ typedef struct pipeline_layout_desc_t
 	size_t stride;
 } pipeline_layout_desc_t;
 
+typedef enum pipeline_uniform_type_t
+{
+	UNIFORM_TYPE_NONE,
+	UNIFORM_TYPE_MAT4,
+	UNIFORM_TYPE_COUNT__,
+} pipeline_uniform_type_t;
+
+typedef struct pipeline_uniform_desc_t
+{
+	const char *name;
+	pipeline_uniform_type_t type;
+} pipeline_uniform_desc_t;
+
+typedef struct pipeline_uniform_layout_desc_t
+{
+	pipeline_uniform_desc_t location[PIPELINE_MAX_UNIFORMS__];
+} pipeline_uniform_layout_desc_t;
+
+typedef struct pipeline_uniform_t
+{
+	GLint gl_location;
+	pipeline_uniform_type_t type;
+} pipeline_uniform_t;
+
 typedef struct pipeline_desc_t
 {
 	shader_t *vs;
 	shader_t *fs;
 	pipeline_layout_desc_t layout;
+	pipeline_uniform_layout_desc_t uniforms;
 	primitive_type_t primitive_type;
 } pipeline_desc_t;
 
@@ -77,6 +103,7 @@ typedef struct pipeline_t
 	GLuint id;
 	pipeline_layout_desc_t layout;
 	primitive_type_t primitive_type;
+	pipeline_uniform_t uniforms[PIPELINE_MAX_UNIFORMS__];
 } pipeline_t;
 
 bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline);
@@ -84,5 +111,6 @@ pipeline_t *pipeline_create(const pipeline_desc_t *desc);
 void pipeline_free(pipeline_t *pipeline);
 
 pipeline_t *pipeline_bind(pipeline_t *pipeline);
+void pipeline_set_uniform(pipeline_t *pipeline, int location, void *data);
 
 #endif /* __gfx_pipeline_h__ */

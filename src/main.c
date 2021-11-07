@@ -62,8 +62,11 @@ int main()
 		"layout(location = 0) in vec3 i_pos;\n"
 		"layout(location = 1) in vec3 i_col;\n"
 		"out vec3 v_col;\n"
+		"uniform mat4 u_model;\n"
+		"uniform mat4 u_view;\n"
+		"uniform mat4 u_projection;\n"
 		"void main() {\n"
-		"	gl_Position = vec4(i_pos, 1.0);\n"
+		"	gl_Position = u_projection * u_view * u_model * vec4(i_pos, 1.0);\n"
 		"	v_col = i_col;\n"
 		"}\n";
 
@@ -93,6 +96,11 @@ int main()
 			.location[1] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, color) },
 			.stride = sizeof(vertex_t),
 		},
+		.uniforms = {
+			.location[0] = { .type = UNIFORM_TYPE_MAT4, .name = "u_model" },
+			.location[1] = { .type = UNIFORM_TYPE_MAT4, .name = "u_view" },
+			.location[2] = { .type = UNIFORM_TYPE_MAT4, .name = "u_projection" },
+		}
 	});
 
 	// main loop
@@ -103,6 +111,20 @@ int main()
 		buffer_bind(vertex_data);
 		buffer_bind(index_data);
 		pipeline_bind(pipeline);
+
+		mat4 model = GLM_MAT4_IDENTITY_INIT;
+		glm_rotate(model, glfwGetTime(), (vec3){ 0.0f, 0.0f, 1.0f });
+
+		mat4 view = GLM_MAT4_IDENTITY_INIT;
+		glm_translate(view, (vec3){ 0.0f, 0.0f, -3.0f });
+
+		mat4 projection = GLM_MAT4_IDENTITY_INIT;
+		uvec2 size = window_get_size(window);
+		glm_perspective(glm_rad(70.0f), (float)size.w / (float)size.h, 0.1f, 1000.0f, projection);
+
+		pipeline_set_uniform(pipeline, 0, model);
+		pipeline_set_uniform(pipeline, 1, view);
+		pipeline_set_uniform(pipeline, 2, projection);
 
 		renderer_draw_indexed(ARRAY_LENGTH(indices));
 

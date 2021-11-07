@@ -125,6 +125,7 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 
 	pipeline_t *result = calloc(1, sizeof(pipeline_t));
 
+	// create pipeline
 	result->id = glCreateProgram();
 	result->layout = desc->layout;
 	result->primitive_type = desc->primitive_type;
@@ -137,9 +138,19 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 	glGetProgramiv(result->id, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		printf("Failed to link pipeline\n");
 		pipeline_free(result);
 		return false;
+	}
+
+	// create uniforms
+	for (int i = 0; i < PIPELINE_MAX_UNIFORMS__; i++)
+	{
+		pipeline_uniform_type_t type = desc->uniforms.location[i].type;
+		if (type == UNIFORM_TYPE_NONE) break;
+
+		GLint loc = glGetUniformLocation(result->id, desc->uniforms.location[i].name);
+		result->uniforms[i].gl_location = loc;
+		result->uniforms[i].type = type;
 	}
 
 	*pipeline = result;
@@ -198,4 +209,23 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 	pipeline_t *last_pip = ctx->cur_pipeline;
 	ctx->cur_pipeline = pipeline;
 	return last_pip;
+}
+
+void pipeline_set_uniform(pipeline_t *pipeline, int location, void *data)
+{
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(pipeline != NULL, "Cannot set uniform of NULL");
+	HE_ASSERT(0 <= location < PIPELINE_MAX_UNIFORMS__, "Cannot set uniform outside pipeline bounds");
+
+	pipeline_t *last_pip = pipeline_bind(pipeline);
+
+	switch (pipeline->uniforms[location].type)
+	{
+	case UNIFORM_TYPE_MAT4:
+		glUniformMatrix4fv(pipeline->uniforms[location].gl_location, 1, false, data);
+		break;
+	};
+
+	pipeline_bind(last_pip);
 }

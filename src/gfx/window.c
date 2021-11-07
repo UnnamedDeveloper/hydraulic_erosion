@@ -8,8 +8,8 @@ void window_init(const window_desc_t *desc, window_t **window)
 {
 	HE_ASSERT(window != NULL, "Cannot initialize NULL");
 	HE_ASSERT(desc != NULL, "A window description is required");
-	HE_ASSERT(desc->w > 0, "Window width must be larger than 0");
-	HE_ASSERT(desc->h > 0, "Window height must be larger than 0");
+	HE_ASSERT(desc->size.w > 0, "Window width must be larger than 0");
+	HE_ASSERT(desc->size.h > 0, "Window height must be larger than 0");
 	HE_ASSERT(desc->title != NULL, "A window title is required");
 
 	window_t *result = calloc(1, sizeof(window_t));
@@ -22,7 +22,7 @@ void window_init(const window_desc_t *desc, window_t **window)
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
 
-	result->glfw_window = glfwCreateWindow(desc->w, desc->h, desc->title, NULL, NULL);
+	result->glfw_window = glfwCreateWindow(desc->size.w, desc->size.h, desc->title, NULL, NULL);
 
 	context_init(&(context_desc_t){
 		.window = result,
@@ -46,6 +46,13 @@ void window_free(window_t *window)
 	context_free(window->context);
 	glfwDestroyWindow(window->glfw_window);
 	free(window);
+}
+
+uvec2 window_get_size(window_t *window)
+{
+	uvec2 size;
+	glfwGetFramebufferSize(window->glfw_window, &size.w, &size.h);
+	return size;
 }
 
 bool window_process_events(window_t *window)
