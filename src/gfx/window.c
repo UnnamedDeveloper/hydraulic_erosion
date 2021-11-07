@@ -2,7 +2,28 @@
 
 #include <stdlib.h>
 
+#include "events/window_event.h"
 #include "debug/assert.h"
+
+void on_window_close(GLFWwindow *glfw_window)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		window_close_event_t event = { .window = window };
+		event_publish(window->bus, EVENT_TYPE_WINDOW_CLOSE, (event_t *)&event);
+	}
+}
+
+void on_window_resize(GLFWwindow *glfw_window, int width, int height)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		window_resize_event_t event = { .window = window, .size = { (uint32_t)width, (uint32_t)height } };
+		event_publish(window->bus, EVENT_TYPE_WINDOW_RESIZE, (event_t *)&event);
+	}
+}
 
 void window_init(const window_desc_t *desc, window_t **window)
 {
@@ -49,6 +70,15 @@ void window_free(window_t *window)
 	context_free(window->context);
 	glfwDestroyWindow(window->glfw_window);
 	free(window);
+}
+
+void window_attach_event_bus(window_t *window, event_bus_t *bus)
+{
+	window->bus = bus;
+	glfwSetWindowUserPointer(window->glfw_window, window);
+
+	glfwSetWindowCloseCallback(window->glfw_window, on_window_close);
+	glfwSetWindowSizeCallback(window->glfw_window, on_window_resize);
 }
 
 uvec2 window_get_size(window_t *window)

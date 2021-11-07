@@ -8,6 +8,7 @@
 #include <glad/glad.h> // this file includes context.h, which includes buffer.h, which includes glad.h, which must be included before glfw3.h. oh boy...
 #include <GLFW/glfw3.h>
 
+#include "events/event.h"
 #include "math/types.h"
 #include "context.h"
 
@@ -25,12 +26,14 @@ typedef struct window_t
 {
 	GLFWwindow *glfw_window;
 	context_t *context;
+	event_bus_t *bus;
 } window_t;
 
 void window_init(const window_desc_t *desc, window_t **window);
 window_t *window_create(const window_desc_t *desc);
 void window_free(window_t *window);
 
+void window_attach_event_bus(window_t *window, event_bus_t *bus);
 uvec2 window_get_size(window_t *window);
 
 bool window_process_events(window_t *window);
