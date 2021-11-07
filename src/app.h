@@ -10,6 +10,7 @@
 
 typedef struct app_state_t
 {
+	bool running;
 	window_t *window;
 	event_bus_t *event_bus;
 } app_state_t;

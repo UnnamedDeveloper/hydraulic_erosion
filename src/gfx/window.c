@@ -2,10 +2,87 @@
 
 #include <stdlib.h>
 
+#include "events/key_event.h"
+#include "events/mouse_event.h"
 #include "events/window_event.h"
 #include "debug/assert.h"
 
-void on_window_close(GLFWwindow *glfw_window)
+static void on_char_type(GLFWwindow *glfw_window, unsigned int keycode)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		char_type_event_t event = { .c = (char)keycode, .wide = (wchar_t)keycode, .keycode = keycode };
+		event_publish(window->bus, EVENT_TYPE_CHAR_TYPE, (event_t *)&event);
+	}
+}
+
+static void on_key(GLFWwindow *glfw_window, int key, int scancode, int action, int mods)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		switch (action)
+		{
+		default:
+		case GLFW_PRESS:
+		case GLFW_REPEAT:
+		{
+			key_press_event_t event = { .key = key };
+			event_publish(window->bus, EVENT_TYPE_KEY_PRESS, (event_t *)&event);
+		}
+		case GLFW_RELEASE:
+		{
+			key_release_event_t event = { .key = key };
+			event_publish(window->bus, EVENT_TYPE_KEY_RELEASE, (event_t *)&event);
+		}
+		}
+	}
+}
+
+static void on_mouse_move(GLFWwindow *glfw_window, double x, double y)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		mouse_move_event_t event = { .position = { x, y } };
+		event_publish(window->bus, EVENT_TYPE_MOUSE_MOVE, (event_t *)&event);
+	}
+}
+
+static void on_mouse_scroll(GLFWwindow *glfw_window, double x, double y)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		mouse_scroll_event_t event = { .offset = { x, y } };
+		event_publish(window->bus, EVENT_TYPE_MOUSE_SCROLL, (event_t *)&event);
+	}
+}
+
+static void on_mouse_button(GLFWwindow *glfw_window, int button, int action, int mods)
+{
+	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
+	if (window->bus != NULL)
+	{
+		switch (action)
+		{
+		default:
+		case GLFW_PRESS:
+		{
+			mouse_press_event_t event = { .button = button };
+			event_publish(window->bus, EVENT_TYPE_MOUSE_PRESS, (event_t *)&event);
+		}
+		case GLFW_RELEASE:
+		{
+			mouse_release_event_t event = { .button = button };
+			event_publish(window->bus, EVENT_TYPE_MOUSE_RELEASE, (event_t *)&event);
+		}
+		}
+	}
+}
+
+static void on_window_close(GLFWwindow *glfw_window)
 {
 	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
 	if (window->bus != NULL)
@@ -15,7 +92,7 @@ void on_window_close(GLFWwindow *glfw_window)
 	}
 }
 
-void on_window_resize(GLFWwindow *glfw_window, int width, int height)
+static void on_window_resize(GLFWwindow *glfw_window, int width, int height)
 {
 	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
 	if (window->bus != NULL)
@@ -77,6 +154,11 @@ void window_attach_event_bus(window_t *window, event_bus_t *bus)
 	window->bus = bus;
 	glfwSetWindowUserPointer(window->glfw_window, window);
 
+	glfwSetCharCallback(window->glfw_window, on_char_type);
+	glfwSetKeyCallback(window->glfw_window, on_key);
+	glfwSetCursorPosCallback(window->glfw_window, on_mouse_move);
+	glfwSetScrollCallback(window->glfw_window, on_mouse_scroll);
+	glfwSetMouseButtonCallback(window->glfw_window, on_mouse_button);
 	glfwSetWindowCloseCallback(window->glfw_window, on_window_close);
 	glfwSetWindowSizeCallback(window->glfw_window, on_window_resize);
 }

@@ -7,6 +7,13 @@
 
 typedef enum event_type_t
 {
+	EVENT_TYPE_CHAR_TYPE,
+	EVENT_TYPE_KEY_PRESS,
+	EVENT_TYPE_KEY_RELEASE,
+	EVENT_TYPE_MOUSE_MOVE,
+	EVENT_TYPE_MOUSE_SCROLL,
+	EVENT_TYPE_MOUSE_PRESS,
+	EVENT_TYPE_MOUSE_RELEASE,
 	EVENT_TYPE_WINDOW_CLOSE,
 	EVENT_TYPE_WINDOW_RESIZE,
 	EVENT_TYPE_COUNT__,
@@ -15,7 +22,7 @@ typedef enum event_type_t
 typedef struct event_t event_t;
 
 typedef struct event_bus_t event_bus_t;
-typedef void(*event_callback_fn_t)(event_bus_t *, event_t *);
+typedef void(*event_callback_fn_t)(event_bus_t *, event_type_t, event_t *);
 
 typedef struct event_bus_desc_t
 {

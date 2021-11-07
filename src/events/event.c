@@ -37,7 +37,7 @@ void event_publish(event_bus_t *bus, event_type_t type, event_t *event)
 	{
 		event_callback_fn_t cb = bus->callbacks[type][i];
 		if (cb == NULL) break;
-		cb(bus, event);
+		cb(bus, type, event);
 	}
 }
 
