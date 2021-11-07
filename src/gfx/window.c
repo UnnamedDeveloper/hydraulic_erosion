@@ -23,6 +23,7 @@ void window_init(const window_desc_t *desc, window_t **window)
 #endif
 
 	result->glfw_window = glfwCreateWindow(desc->size.w, desc->size.h, desc->title, NULL, NULL);
+	HE_ASSERT(result->glfw_window, "Failed to create GLFW window");
 
 	context_init(&(context_desc_t){
 		.window = result,
@@ -43,6 +44,8 @@ window_t *window_create(const window_desc_t *desc)
 
 void window_free(window_t *window)
 {
+	if (window == NULL) return;
+	
 	context_free(window->context);
 	glfwDestroyWindow(window->glfw_window);
 	free(window);

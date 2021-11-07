@@ -2,6 +2,10 @@
 
 #include <stdlib.h>
 
+// most appropriate file for this
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include "debug/assert.h"
 #include "context.h"
 

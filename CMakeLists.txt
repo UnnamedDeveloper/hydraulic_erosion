@@ -7,6 +7,7 @@ add_subdirectory("deps/glfw")
 
 add_executable(${PROJECT_NAME}
 	"src/main.c"
+	"src/app.h" "src/app.c"
 	"src/debug/assert.h" "src/debug/assert.c"
 	"src/gfx/buffer.h" "src/gfx/buffer.c" "src/gfx/context.h" "src/gfx/context.c" "src/gfx/image.h" "src/gfx/image.c" "src/gfx/pipeline.h" "src/gfx/pipeline.c" "src/gfx/renderer.h" "src/gfx/renderer.c" "src/gfx/window.h" "src/gfx/window.c"
 	"src/math/types.h" "src/math/types.c")
