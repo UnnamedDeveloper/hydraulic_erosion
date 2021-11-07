@@ -18,6 +18,54 @@ static GLenum get_gl_shader_type(shader_type_t type)
 	};
 }
 
+static GLint get_attrib_component_count(pipeline_attrib_type_t type)
+{
+	HE_ASSERT(ATTRIBUTE_TYPE_NONE < type < ATTRIBUTE_TYPE_COUNT__);
+
+	switch (type)
+	{
+	default:
+	case ATTRIBUTE_TYPE_CHAR:
+	case ATTRIBUTE_TYPE_BOOL:
+	case ATTRIBUTE_TYPE_FLOAT:
+	case ATTRIBUTE_TYPE_INT:
+		return 1;
+	case ATTRIBUTE_TYPE_FLOAT2:
+	case ATTRIBUTE_TYPE_INT2:
+		return 2;
+	case ATTRIBUTE_TYPE_FLOAT3:
+	case ATTRIBUTE_TYPE_INT3:
+		return 3;
+	case ATTRIBUTE_TYPE_FLOAT4:
+	case ATTRIBUTE_TYPE_INT4:
+		return 4;
+	};
+}
+
+static GLenum get_attrib_gl_type(pipeline_attrib_type_t type)
+{
+	HE_ASSERT(ATTRIBUTE_TYPE_NONE < type < ATTRIBUTE_TYPE_COUNT__);
+
+	switch (type)
+	{
+	case ATTRIBUTE_TYPE_CHAR:
+		return GL_BYTE;
+	case ATTRIBUTE_TYPE_BOOL:
+		return GL_BYTE;
+	case ATTRIBUTE_TYPE_INT:
+	case ATTRIBUTE_TYPE_INT2:
+	case ATTRIBUTE_TYPE_INT3:
+	case ATTRIBUTE_TYPE_INT4:
+		return GL_INT;
+	default:
+	case ATTRIBUTE_TYPE_FLOAT:
+	case ATTRIBUTE_TYPE_FLOAT2:
+	case ATTRIBUTE_TYPE_FLOAT3:
+	case ATTRIBUTE_TYPE_FLOAT4:
+		return GL_FLOAT;
+	};
+}
+
 bool shader_init(const shader_desc_t *desc, shader_t **shader)
 {
 	HE_ASSERT(shader != NULL);
@@ -67,10 +115,12 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 	HE_ASSERT(desc != NULL);
 	HE_ASSERT(desc->vs != NULL);
 	HE_ASSERT(desc->fs != NULL);
+	HE_ASSERT(desc->layout.location[0].type != ATTRIBUTE_TYPE_NONE);
 
 	pipeline_t *result = calloc(1, sizeof(pipeline_t));
 
 	result->id = glCreateProgram();
+	result->layout = desc->layout;
 
 	glAttachShader(result->id, desc->vs->id);
 	glAttachShader(result->id, desc->fs->id);
@@ -112,6 +162,20 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 	if (pipeline != NULL)
 	{
 		glUseProgram(pipeline->id);
+
+		for (int i = 0; i < PIPELINE_MAX_ATTRIBS__; i++)
+		{
+			pipeline_attrib_type_t type = pipeline->layout.location[i].type;
+			if (type == ATTRIBUTE_TYPE_NONE) break;
+
+			glEnableVertexAttribArray(i);
+			glVertexAttribPointer(i,
+				get_attrib_component_count(type),
+				get_attrib_gl_type(type),
+				pipeline->layout.location[i].normalized,
+				pipeline->layout.stride,
+				(void *)pipeline->layout.location[i].offset);
+		}
 	}
 	else
 	{
