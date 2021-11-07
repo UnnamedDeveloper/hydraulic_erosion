@@ -7,6 +7,7 @@
 #include "debug/assert.h"
 #include "gfx/buffer.h"
 #include "gfx/pipeline.h"
+#include "gfx/renderer.h"
 #include "gfx/window.h"
 
 #define ARRAY_LENGTH(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
@@ -38,7 +39,7 @@ int main()
 	};
 
 	uint32_t indices[] = {
-		0, 1, 2
+		0, 1, 2,
 	};
 
 	buffer_t *vertex_data = buffer_create(&(buffer_desc_t){
@@ -95,14 +96,16 @@ int main()
 	});
 
 	// main loop
-	glClearColor(1, 1, 1, 1);
 	while (window_process_events(window))
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		renderer_clear(&(cmd_clear_desc_t){ .color = { 1.0f, 1.0f, 1.0f, 1.0f }, });
+
 		buffer_bind(vertex_data);
 		buffer_bind(index_data);
 		pipeline_bind(pipeline);
-		glDrawElements(GL_TRIANGLES, ARRAY_LENGTH(indices), GL_UNSIGNED_INT, 0);
+
+		renderer_draw_indexed(ARRAY_LENGTH(indices));
+
 		window_swap_buffers(window);
 	}
 

@@ -15,11 +15,17 @@ void window_init(const window_desc_t *desc, window_t **window)
 	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 	glfwWindowHint(GLFW_RESIZABLE, desc->resizable);
 	glfwWindowHint(GLFW_SAMPLES, desc->samples);
+#ifndef NDEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
 
 	result->glfw_window = glfwCreateWindow(desc->w, desc->h, desc->title, NULL, NULL);
 
 	context_init(&(context_desc_t){
 		.window = result,
+	#ifndef NDEBUG
+		.debug = true,
+	#endif
 	}, &result->context);
 
 	*window = result;

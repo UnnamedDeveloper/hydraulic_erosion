@@ -1,6 +1,8 @@
 #ifndef __gfx_context_h__
 #define __gfx_context_h__
 
+#include <stdbool.h>
+
 #include "buffer.h"
 #include "pipeline.h"
 
@@ -12,6 +14,7 @@ typedef struct window_t window_t;
 typedef struct context_desc_t
 {
 	window_t *window;
+	bool debug;
 } context_desc_t;
 
 typedef struct context_t

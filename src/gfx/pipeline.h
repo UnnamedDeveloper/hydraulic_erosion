@@ -6,6 +6,8 @@
 
 #include <glad/glad.h>
 
+#include "renderer.h"
+
 typedef enum shader_type_t
 {
 	SHADER_TYPE_VERTEX,
@@ -67,12 +69,14 @@ typedef struct pipeline_desc_t
 	shader_t *vs;
 	shader_t *fs;
 	pipeline_layout_desc_t layout;
+	primitive_type_t primitive_type;
 } pipeline_desc_t;
 
 typedef struct pipeline_t
 {
 	GLuint id;
 	pipeline_layout_desc_t layout;
+	primitive_type_t primitive_type;
 } pipeline_t;
 
 bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline);

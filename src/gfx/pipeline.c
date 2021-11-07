@@ -85,7 +85,6 @@ bool shader_init(const shader_desc_t *desc, shader_t **shader)
 	glGetShaderiv(result->id, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		printf("Failed to compile shader\n");
 		shader_free(result);
 		return false;
 	}
@@ -121,6 +120,7 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 
 	result->id = glCreateProgram();
 	result->layout = desc->layout;
+	result->primitive_type = desc->primitive_type;
 
 	glAttachShader(result->id, desc->vs->id);
 	glAttachShader(result->id, desc->fs->id);
