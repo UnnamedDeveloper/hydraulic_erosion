@@ -56,8 +56,8 @@ static void gl_debug_callback(GLenum source, GLenum type, uint32_t id, GLenum se
 
 void context_init(const context_desc_t *desc, context_t **context)
 {
-	HE_ASSERT(desc != NULL);
-	HE_ASSERT(context != NULL);
+	HE_ASSERT(context != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A context description is required");
 
 	context_t *result = calloc(1, sizeof(context_t));
 
@@ -69,7 +69,7 @@ void context_init(const context_desc_t *desc, context_t **context)
 	if (!glad_loaded)
 	{
 		bool status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		HE_ASSERT(status);
+		HE_ASSERT(status, "Failed to initialize GLAD");
 		glad_loaded = status;
 	}
 

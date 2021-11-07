@@ -24,6 +24,8 @@ static GLenum get_gl_primitive_type(primitive_type_t type)
 
 void renderer_clear(cmd_clear_desc_t *cmd)
 {
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
 	glClearColor(cmd->color[0], cmd->color[1], cmd->color[2], cmd->color[3]);
 	glad_glClearDepth(cmd->depth);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -32,8 +34,8 @@ void renderer_clear(cmd_clear_desc_t *cmd)
 void renderer_draw_indexed(uint32_t count)
 {
 	context_t *ctx = context_get_bound();
-
-	HE_ASSERT(ctx->cur_buffers[BUFFER_TYPE_INDEX] != NULL);
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(ctx->cur_buffers[BUFFER_TYPE_INDEX] != NULL, "A bound index buffer is required for indexed drawing");
 
 	glDrawElements(get_gl_primitive_type(ctx->cur_pipeline->primitive_type),
 		count,

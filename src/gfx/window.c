@@ -6,8 +6,11 @@
 
 void window_init(const window_desc_t *desc, window_t **window)
 {
-	HE_ASSERT(desc != NULL);
-	HE_ASSERT(window != NULL);
+	HE_ASSERT(window != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A window description is required");
+	HE_ASSERT(desc->w > 0, "Window width must be larger than 0");
+	HE_ASSERT(desc->h > 0, "Window height must be larger than 0");
+	HE_ASSERT(desc->title != NULL, "A window title is required");
 
 	window_t *result = calloc(1, sizeof(window_t));
 

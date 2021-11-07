@@ -20,7 +20,7 @@ static GLenum get_gl_shader_type(shader_type_t type)
 
 static GLint get_attrib_component_count(pipeline_attrib_type_t type)
 {
-	HE_ASSERT(ATTRIBUTE_TYPE_NONE < type < ATTRIBUTE_TYPE_COUNT__);
+	HE_ASSERT(ATTRIBUTE_TYPE_NONE < type < ATTRIBUTE_TYPE_COUNT__, "Invalid attribute type");
 
 	switch (type)
 	{
@@ -44,7 +44,7 @@ static GLint get_attrib_component_count(pipeline_attrib_type_t type)
 
 static GLenum get_attrib_gl_type(pipeline_attrib_type_t type)
 {
-	HE_ASSERT(ATTRIBUTE_TYPE_NONE < type < ATTRIBUTE_TYPE_COUNT__);
+	HE_ASSERT(ATTRIBUTE_TYPE_NONE < type < ATTRIBUTE_TYPE_COUNT__, "Invalid attribute type");
 
 	switch (type)
 	{
@@ -68,10 +68,12 @@ static GLenum get_attrib_gl_type(pipeline_attrib_type_t type)
 
 bool shader_init(const shader_desc_t *desc, shader_t **shader)
 {
-	HE_ASSERT(shader != NULL);
-	HE_ASSERT(desc != NULL);
-	HE_ASSERT(desc->source != NULL);
-	HE_ASSERT(0 <= desc->type < SHADER_TYPE_COUNT__);
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(shader != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A shader description is required");
+	HE_ASSERT(desc->source != NULL, "Shader source is required");
+	HE_ASSERT(0 <= desc->type < SHADER_TYPE_COUNT__, "Invalid shader typInvalid shader type");
 
 	shader_t *result = calloc(1, sizeof(shader_t));
 
@@ -104,17 +106,22 @@ void shader_free(shader_t *shader)
 {
 	if (shader == NULL) return;
 
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+
 	glDeleteShader(shader->id);
 	free(shader);
 }
 
 bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 {
-	HE_ASSERT(pipeline != NULL);
-	HE_ASSERT(desc != NULL);
-	HE_ASSERT(desc->vs != NULL);
-	HE_ASSERT(desc->fs != NULL);
-	HE_ASSERT(desc->layout.location[0].type != ATTRIBUTE_TYPE_NONE);
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(pipeline != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A pipeline description is required");
+	HE_ASSERT(desc->vs != NULL, "A vertex shader is required");
+	HE_ASSERT(desc->fs != NULL, "A fragment shader is required");
+	HE_ASSERT(desc->layout.location[0].type != ATTRIBUTE_TYPE_NONE, "Pipeline must have at least one attribute");
 
 	pipeline_t *result = calloc(1, sizeof(pipeline_t));
 
@@ -151,6 +158,8 @@ void pipeline_free(pipeline_t *pipeline)
 	if (pipeline == NULL) return;
 
 	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+
 	if (ctx->cur_pipeline == pipeline)
 		pipeline_bind(NULL);
 
@@ -159,10 +168,14 @@ void pipeline_free(pipeline_t *pipeline)
 
 pipeline_t *pipeline_bind(pipeline_t *pipeline)
 {
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+
 	if (pipeline != NULL)
 	{
 		glUseProgram(pipeline->id);
 
+		// TODO: Disable previous pipeline attributes
 		for (int i = 0; i < PIPELINE_MAX_ATTRIBS__; i++)
 		{
 			pipeline_attrib_type_t type = pipeline->layout.location[i].type;
@@ -182,7 +195,6 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 		glUseProgram(PIPELINE_DEFAULT__);
 	}
 
-	context_t *ctx = context_get_bound();
 	pipeline_t *last_pip = ctx->cur_pipeline;
 	ctx->cur_pipeline = pipeline;
 	return last_pip;

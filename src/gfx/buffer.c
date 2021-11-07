@@ -31,10 +31,12 @@ static GLenum get_gl_buffer_usage(buffer_usage_t usage)
 
 void buffer_init(const buffer_desc_t *desc, buffer_t **buffer)
 {
-	HE_ASSERT(buffer != NULL);
-	HE_ASSERT(desc != NULL);
-	HE_ASSERT(0 <= desc->type < BUFFER_TYPE_COUNT__);
-	HE_ASSERT(0 <= desc->usage < BUFFER_USAGE_COUNT__);
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(buffer != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A buffer description is required");
+	HE_ASSERT(0 <= desc->type < BUFFER_TYPE_COUNT__, "Invalid buffer type");
+	HE_ASSERT(0 <= desc->usage < BUFFER_USAGE_COUNT__, "Invalid buffer usage");
 
 	buffer_t *result = calloc(1, sizeof(buffer_t));
 
@@ -60,6 +62,8 @@ void buffer_free(buffer_t *buffer)
 	if (buffer == NULL) return;
 
 	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	
 	if (ctx->cur_buffers[buffer->type] == buffer)
 		buffer_bind(NULL);
 
@@ -82,6 +86,9 @@ buffer_t *buffer_bind(buffer_t *buffer)
 
 buffer_t *buffer_bind_to(buffer_type_t to, buffer_t *buffer)
 {
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+
 	if (buffer != NULL)
 	{
 		glBindBuffer(get_gl_buffer_target(to), buffer->id);
@@ -91,7 +98,6 @@ buffer_t *buffer_bind_to(buffer_type_t to, buffer_t *buffer)
 		glBindBuffer(get_gl_buffer_target(to), BUFFER_DEFAULT__);
 	}
 
-	context_t *ctx = context_get_bound();
 	buffer_t *last_buf = ctx->cur_buffers[to];
 	ctx->cur_buffers[to] = buffer;
 	return last_buf;
@@ -99,7 +105,9 @@ buffer_t *buffer_bind_to(buffer_type_t to, buffer_t *buffer)
 
 void buffer_set_data(buffer_t *buffer, size_t size, void *data)
 {
-	HE_ASSERT(buffer != NULL);
+	context_t *ctx = context_get_bound();
+	HE_ASSERT(ctx != NULL, "A bound context is required");
+	HE_ASSERT(buffer != NULL, "Cannot set data of NULL");
 
 	// bind buffer
 	buffer_t *last_buf = buffer_bind(buffer);

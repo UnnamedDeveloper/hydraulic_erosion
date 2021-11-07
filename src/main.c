@@ -20,7 +20,7 @@ typedef struct vertex_t
 
 int main()
 {
-	HE_VERIFY(glfwInit());
+	HE_VERIFY(glfwInit(), "Failed to initialize GLFW");
 
 	// create window & context
 	window_t *window = window_create(&(window_desc_t){
