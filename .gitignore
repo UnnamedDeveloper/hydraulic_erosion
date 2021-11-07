@@ -1,7 +1,6 @@
-###EXECUTABLE FILE###
-hydraulic_erosion
-hydraulic_erosion.exe
-hydraulic_erosion.app
+###Buildfiles###
+**/[Bb]in/
+**/[Bb]uild/
 
 
 ###SublimeText###
@@ -135,6 +134,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+[Oo]ut/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -457,3 +457,9 @@ CTestTestfile.cmake
 Session.vim
 .netrwhist
 *~
+
+
+###Exceptions###
+
+# The entirety of the source directory
+!src/**
