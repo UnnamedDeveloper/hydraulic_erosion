@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
-project(hydraulic_erosion VERSION 0.1.0 LANGUAGES C)
+project(hydraulic_erosion LANGUAGES C)
 
 add_subdirectory("deps/cglm")
 add_subdirectory("deps/glad")
@@ -19,6 +19,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	C_STANDARD_REQUIRED TRUE
 	C_EXTENSIONS OFF
 	FOLDER "${PROJECT_NAME}")
+
+if (WIN32)
+	# the default visual studio stack size failed me
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/STACK:10000000")
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE "src")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/")

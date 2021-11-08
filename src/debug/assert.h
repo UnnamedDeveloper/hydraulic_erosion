@@ -9,10 +9,11 @@
 #if defined(__linux__)
 	#include <signal.h>
 	#define HE_DEBUGBREAK() raise(SIGTRAP)
-#elif defined(WIN32)
+#elif defined(_WIN32)
 	#define HE_DEBUGBREAK() __debugbreak()
 #else
 	#error "This platform has no known debugbreak"
+	#define HE_DEBUGBREAK()
 #endif
 
 #else /* NDEBUG */
