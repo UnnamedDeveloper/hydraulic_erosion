@@ -34,6 +34,8 @@ typedef struct buffer_t
 	GLuint id;
 	buffer_type_t type;
 	buffer_usage_t usage;
+	size_t size;
+	void *data;
 } buffer_t;
 
 void buffer_init(const buffer_desc_t *desc, buffer_t **buffer);

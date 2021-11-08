@@ -113,6 +113,8 @@ void buffer_set_data(buffer_t *buffer, size_t size, void *data)
 	buffer_t *last_buf = buffer_bind(buffer);
 
 	glBufferData(get_gl_buffer_target(buffer->type), size, data, get_gl_buffer_usage(buffer->usage));
+	buffer->size = size;
+	buffer->data = data;
 
 	// restore previous buffer
 	buffer_bind(last_buf);
