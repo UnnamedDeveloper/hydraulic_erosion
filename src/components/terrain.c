@@ -5,11 +5,11 @@
 #include "debug/assert.h"
 #include "io/file.h"
 
-typedef struct vertex_t
+typedef struct terrain_vertex_t
 {
 	vec3 position;
 	vec3 color;
-} vertex_t;
+} terrain_vertex_t;
 
 static shader_t *create_shader(const char *path, shader_type_t type)
 {
@@ -45,9 +45,9 @@ static void terrain_init_pipeline(terrain_t *terrain)
 		.vs = vs,
 		.fs = fs,
 		.layout = {
-			.location[0] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, position), },
-			.location[1] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, color),    },
-			.stride = sizeof(vertex_t),
+			.location[0] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, position), },
+			.location[1] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, color),    },
+			.stride = sizeof(terrain_vertex_t),
 		},
 		.uniforms = {
 			.location[0] = { .type = UNIFORM_TYPE_MAT4, .name = "u_model",      },
@@ -55,6 +55,7 @@ static void terrain_init_pipeline(terrain_t *terrain)
 			.location[2] = { .type = UNIFORM_TYPE_MAT4, .name = "u_projection", },
 		},
 		.depth_test = true,
+		.culling = true,
 	}, &terrain->pipeline);
 
 	shader_free(vs);
@@ -63,33 +64,8 @@ static void terrain_init_pipeline(terrain_t *terrain)
 
 static void terrain_init_mesh(terrain_t *terrain)
 {
-	vertex_t vertices[] = {
-		{ { -1, -1, -1 }, { 1.0f, 0.0f, 0.0f } },
-		{ {  1, -1, -1 }, { 0.0f, 1.0f, 0.0f } },
-		{ {  1,  1, -1 }, { 0.0f, 0.0f, 1.0f } },
-		{ { -1,  1, -1 }, { 1.0f, 0.0f, 0.0f } },
-		{ { -1, -1,  1 }, { 1.0f, 1.0f, 0.0f } },
-		{ {  1, -1,  1 }, { 1.0f, 1.0f, 1.0f } },
-		{ {  1,  1,  1 }, { 1.0f, 1.0f, 1.0f } },
-		{ { -1,  1,  1 }, { 1.0f, 1.0f, 1.0f } },
-	};
-
-	int indices[] = {
-		0, 1, 3, 3, 1, 2,
-		1, 5, 2, 2, 5, 6,
-		5, 4, 6, 6, 4, 7,
-		4, 0, 7, 7, 0, 3,
-		3, 2, 7, 7, 2, 6,
-		4, 5, 0, 0, 5, 1,
-	};
-
 	mesh_init(&(mesh_desc_t){
 		.dynamic = true,
-		.vertices = vertices,
-		.vertices_size = sizeof(vertices),
-		.indices = indices,
-		.indices_size = sizeof(indices),
-		.index_count = sizeof(indices) / sizeof(indices[0]),
 	}, &terrain->mesh);
 }
 
@@ -154,8 +130,59 @@ void terrain_draw(camera_t *camera, terrain_t *terrain)
 	pipeline_bind(last_pip);
 }
 
+#define size_x (20)
+#define size_z (20)
+
 void terrain_resize(terrain_t *terrain, uvec2 size)
 {
 	HE_ASSERT(terrain != NULL, "Cannot resize NULL");
 	HE_ASSERT(size.w > 0 || size.h > 0, "Invalid terrain size");
+
+	terrain_vertex_t vertices[size_x * size_z];
+	int indices[(size_x - 1) * (size_z - 1) * 6];
+
+	// thanks brackeys
+	int i = 0;
+	for (int z = 0; z < size_z; z++)
+	{
+		for (int x = 0; x < size_x; x++)
+		{
+			vertices[i].position[0] = (float)x - (size_x / 2.0f);
+			vertices[i].position[1] = 0;
+			vertices[i].position[2] = (float)z - (size_z / 2.0f);
+
+			vertices[i].color[0] = ((float)x + 1.0f) / size_x;
+			vertices[i].color[1] = ((float)x + 1) * ((float)z + 1) / (size_x * size_z);
+			vertices[i].color[2] = ((float)z + 1.0f) / size_z;
+
+			i++;
+		}
+	}
+
+	int vertex = 0;
+	int index = 0;
+	for (int z = 0; z < size_z - 1; z++)
+	{
+		for (int x = 0; x < size_x - 1; x++)
+		{
+			indices[index + 0] = vertex;
+			indices[index + 1] = vertex + (size_x - 1) + 1;
+			indices[index + 2] = vertex + 1;
+			indices[index + 3] = vertex + 1;
+			indices[index + 4] = vertex + (size_x - 1) + 1;
+			indices[index + 5] = vertex + (size_x - 1) + 2;
+
+			vertex++;
+			index += 6;
+		}
+		vertex++;
+	}
+
+	mesh_set_data(terrain->mesh, &(mesh_desc_t){
+		.vertices = vertices,
+		.vertices_size = sizeof(vertices),
+		.indices = indices,
+		.indices_size = sizeof(indices),
+		.index_count = (size_x - 1) * (size_z - 1) * 6,
+	});
 }

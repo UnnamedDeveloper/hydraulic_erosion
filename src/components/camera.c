@@ -98,7 +98,7 @@ void camera_free(camera_t *camera)
 void camera_update_projection(camera_t *camera)
 {
 	uvec2 size = window_get_size(camera->window);
-	glm_perspective(glm_rad(camera->fov), (float)size.x / (float)size.y, 0.1f, 100.0f, camera->projection);
+	glm_perspective(glm_rad(camera->fov), (float)size.x / (float)size.y, 0.1f, 1000.0f, camera->projection);
 }
 
 void camera_create_view_matrix(camera_t *camera, mat4 view)
