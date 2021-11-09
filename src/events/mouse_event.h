@@ -6,6 +6,7 @@
 typedef struct mouse_move_event_t
 {
 	vec2 position;
+	vec2 offset;
 } mouse_move_event_t;
 
 typedef struct mouse_scroll_event_t

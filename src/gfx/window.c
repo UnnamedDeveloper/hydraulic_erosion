@@ -45,8 +45,19 @@ static void on_mouse_move(GLFWwindow *glfw_window, double x, double y)
 	window_t *window = (window_t *)glfwGetWindowUserPointer(glfw_window);
 	if (window->bus != NULL)
 	{
-		mouse_move_event_t event = { .position = { x, y } };
+		vec2 last_pos = GLM_VEC2_ZERO_INIT;
+		if (window->mouse.last_pos[0] != 0) last_pos[0] = x - window->mouse.last_pos[0];
+		if (window->mouse.last_pos[1] != 0) last_pos[1] = y - window->mouse.last_pos[1];
+
+		mouse_move_event_t event = {
+			.position = { x, y },
+			.offset = { last_pos[0], last_pos[1] },
+		};
+
 		event_publish(window->bus, EVENT_TYPE_MOUSE_MOVE, (event_t *)&event);
+
+		window->mouse.last_pos[0] = x;
+		window->mouse.last_pos[1] = y;
 	}
 }
 

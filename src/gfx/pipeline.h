@@ -112,6 +112,7 @@ typedef struct pipeline_desc_t
 	pipeline_uniform_layout_desc_t uniforms;
 	pipeline_image_layout_desc_t images;
 	primitive_type_t primitive_type;
+	bool depth_test;
 } pipeline_desc_t;
 
 typedef struct pipeline_t
@@ -120,6 +121,7 @@ typedef struct pipeline_t
 	pipeline_layout_desc_t layout;
 	primitive_type_t primitive_type;
 	pipeline_uniform_t uniforms[PIPELINE_MAX_UNIFORMS__];
+	bool depth_test;
 } pipeline_t;
 
 bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline);

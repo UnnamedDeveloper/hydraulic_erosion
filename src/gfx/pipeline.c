@@ -138,6 +138,7 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 	result->id = glCreateProgram();
 	result->layout = desc->layout;
 	result->primitive_type = desc->primitive_type;
+	result->depth_test = desc->depth_test;
 
 	glAttachShader(result->id, desc->vs->id);
 	glAttachShader(result->id, desc->fs->id);
@@ -203,6 +204,16 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 	if (pipeline != NULL)
 	{
 		glUseProgram(pipeline->id);
+
+		// enable gl functions
+		if (pipeline->depth_test)
+		{
+			glEnable(GL_DEPTH_TEST);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
 
 		// TODO: Disable previous pipeline attributes
 		for (int i = 0; i < PIPELINE_MAX_ATTRIBS__; i++)

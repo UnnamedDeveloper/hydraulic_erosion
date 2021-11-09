@@ -27,6 +27,11 @@ typedef struct window_t
 	GLFWwindow *glfw_window;
 	context_t *context;
 	event_bus_t *bus;
+
+	struct
+	{
+		vec2 last_pos;
+	} mouse;
 } window_t;
 
 void window_init(const window_desc_t *desc, window_t **window);

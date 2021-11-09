@@ -16,6 +16,7 @@
 typedef struct vertex_t
 {
 	vec3 position;
+	vec3 color;
 } vertex_t;
 
 static void init_libs()
@@ -32,15 +33,23 @@ static void shutdown_libs()
 static void init_resources(app_state_t *state)
 {
 	vertex_t vertices[] = {
-		{ -0.5f,  0.5f, 0.0f },
-		{ -0.5f, -0.5f, 0.0f },
-		{  0.5f,  0.5f, 0.0f },
-		{  0.5f, -0.5f, 0.0f },
+		{ { -1, -1, -1 }, { 1.0f, 0.0f, 0.0f } },
+		{ {  1, -1, -1 }, { 0.0f, 1.0f, 0.0f } },
+		{ {  1,  1, -1 }, { 0.0f, 0.0f, 1.0f } },
+		{ { -1,  1, -1 }, { 1.0f, 0.0f, 0.0f } },
+		{ { -1, -1,  1 }, { 1.0f, 1.0f, 0.0f } },
+		{ {  1, -1,  1 }, { 1.0f, 1.0f, 1.0f } },
+		{ {  1,  1,  1 }, { 1.0f, 1.0f, 1.0f } },
+		{ { -1,  1,  1 }, { 1.0f, 1.0f, 1.0f } },
 	};
 
 	int indices[] = {
-		0, 1, 2,
-		2, 1, 3,
+		0, 1, 3, 3, 1, 2,
+		1, 5, 2, 2, 5, 6,
+		5, 4, 6, 6, 4, 7,
+		4, 0, 7, 7, 0, 3,
+		3, 2, 7, 7, 2, 6,
+		4, 5, 0, 0, 5, 1,
 	};
 
 	mesh_init(&(mesh_desc_t){
@@ -87,6 +96,7 @@ static void init_resources(app_state_t *state)
 		.fs = fs,
 		.layout = {
 			.location[0] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, position), },
+			.location[1] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, color),    },
 			.stride = sizeof(vertex_t),
 		},
 		.uniforms = {
@@ -94,6 +104,7 @@ static void init_resources(app_state_t *state)
 			.location[1] = { .type = UNIFORM_TYPE_MAT4, .name = "u_view",       },
 			.location[2] = { .type = UNIFORM_TYPE_MAT4, .name = "u_projection", },
 		},
+		.depth_test = true,
 	}, &state->terrain.pipeline);
 
 	shader_free(vs);
@@ -124,6 +135,18 @@ static void on_window_resize(event_bus_t *bus, event_type_t type, window_resize_
 	context_bind(last_ctx);
 }
 
+static void on_mouse_move(event_bus_t *bus, event_type_t type, mouse_move_event_t *event)
+{
+	app_state_t *state = (app_state_t *)bus->user_pointer;
+	camera_move(&state->camera, 0, (vec2){ -event->offset[0] / 10.0f, event->offset[1] / 10.0f });
+}
+
+static void on_mouse_scroll(event_bus_t *bus, event_type_t type, mouse_scroll_event_t *event)
+{
+	app_state_t *state = (app_state_t *)bus->user_pointer;
+	camera_move(&state->camera, event->offset[1], GLM_VEC2_ZERO);
+}
+
 bool app_init(app_state_t *state)
 {
 	memset(state, 0, sizeof(state));
@@ -137,6 +160,8 @@ bool app_init(app_state_t *state)
 
 	event_subscribe(state->event_bus, EVENT_TYPE_WINDOW_CLOSE, (event_callback_fn_t)on_window_close);
 	event_subscribe(state->event_bus, EVENT_TYPE_WINDOW_RESIZE, (event_callback_fn_t)on_window_resize);
+	event_subscribe(state->event_bus, EVENT_TYPE_MOUSE_MOVE, (event_callback_fn_t)on_mouse_move);
+	event_subscribe(state->event_bus, EVENT_TYPE_MOUSE_SCROLL, (event_callback_fn_t)on_mouse_scroll);
 
 	state->window = window_create(&(window_desc_t){
 		.title = APP_NAME,
@@ -150,7 +175,7 @@ bool app_init(app_state_t *state)
 
 	init_resources(state);
 
-	camera_update_projection(&state->camera, window_get_size(state->window));
+	camera_init(70.0f, -5.0f, window_get_size(state->window), &state->camera);
 	pipeline_set_uniform_mat4(state->terrain.pipeline, 2, state->camera.projection);
 
 	return true;
@@ -162,13 +187,13 @@ void app_run(app_state_t *state)
 	{
 		renderer_clear(&(cmd_clear_desc_t){
 			.color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			.depth = 1,
 		});
 
 		// draw mesh
 		pipeline_bind(state->terrain.pipeline);
 
 		mat4 model      = GLM_MAT4_IDENTITY_INIT;
-		glm_rotate(model, glfwGetTime(), (vec3) { 0.0f, 0.0f, 1.0f });
 
 		mat4 view       = GLM_MAT4_IDENTITY_INIT;
 		camera_create_view_matrix(&state->camera, view);
