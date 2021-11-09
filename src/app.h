@@ -6,9 +6,8 @@
 #include <cglm/cglm.h>
 
 #include "components/camera.h"
+#include "components/terrain.h"
 #include "events/event.h"
-#include "gfx/mesh.h"
-#include "gfx/pipeline.h"
 #include "gfx/window.h"
 
 #define APP_NAME "Hydraulic Erosion"
@@ -20,11 +19,7 @@ typedef struct app_state_t
 	window_t *window;
 	event_bus_t *event_bus;
 
-	struct
-	{
-		mesh_t *mesh;
-		pipeline_t *pipeline;
-	} terrain;
+	terrain_t *terrain;
 
 	camera_t camera;
 } app_state_t;

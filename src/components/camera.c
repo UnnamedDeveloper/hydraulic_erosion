@@ -42,3 +42,9 @@ void camera_move(camera_t *camera, float distance_offset, vec2 angle_offset)
 
 	update_camera_position(camera);
 }
+
+void camera_set_target(camera_t *camera, vec2 target)
+{
+	glm_vec3_copy(target, camera->target);
+	update_camera_position(camera);
+}

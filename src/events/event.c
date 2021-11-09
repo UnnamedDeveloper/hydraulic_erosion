@@ -11,8 +11,6 @@ void event_bus_init(const event_bus_desc_t *desc, event_bus_t **event_bus)
 
 	event_bus_t *result = calloc(1, sizeof(event_bus_t));
 
-	result->user_pointer = desc->user_pointer;
-
 	*event_bus = result;
 }
 
@@ -36,16 +34,18 @@ void event_publish(event_bus_t *bus, event_type_t type, event_t *event)
 	for (int i = 0; i < EVENT_MAX_CALLBACKS__; i++)
 	{
 		event_callback_fn_t cb = bus->callbacks[type][i];
+		void *ptr = bus->user_pointers[type][i];
 		if (cb == NULL) break;
-		cb(bus, type, event);
+		cb(bus, ptr, event);
 	}
 }
 
-void event_subscribe(event_bus_t *bus, event_type_t type, event_callback_fn_t callback)
+void event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer, event_callback_fn_t callback)
 {
 	HE_ASSERT(bus != NULL, "Cannot subscribe to NULL");
 	HE_ASSERT(0 <= type < EVENT_TYPE_COUNT__, "Invalid event type");
 
+	bus->user_pointers[type][bus->callback_indices[type]] = user_pointer;
 	bus->callbacks[type][(bus->callback_indices[type]++)] = callback;
 }
 
