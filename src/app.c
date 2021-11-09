@@ -112,6 +112,7 @@ static void on_window_resize(event_bus_t *bus, event_type_t type, window_resize_
 
 	app_state_t *state = (app_state_t *)bus->user_pointer;
 	camera_update_projection(&state->camera, window_get_size(event->window));
+	pipeline_set_uniform_mat4(state->terrain.pipeline, 2, state->camera.projection);
 
 	context_bind(last_ctx);
 }
@@ -143,6 +144,7 @@ bool app_init(app_state_t *state)
 	init_resources(state);
 
 	camera_update_projection(&state->camera, window_get_size(state->window));
+	pipeline_set_uniform_mat4(state->terrain.pipeline, 2, state->camera.projection);
 
 	return true;
 }
@@ -159,16 +161,13 @@ void app_run(app_state_t *state)
 		pipeline_bind(state->terrain.pipeline);
 
 		mat4 model      = GLM_MAT4_IDENTITY_INIT;
-		mat4 view       = GLM_MAT4_IDENTITY_INIT;
-		mat4 projection = GLM_MAT4_IDENTITY_INIT;
-
 		glm_rotate(model, glfwGetTime(), (vec3) { 0.0f, 0.0f, 1.0f });
 
-		glm_translate(view, (vec3) { 0.0f, 0.0f, -3.0f });
+		mat4 view       = GLM_MAT4_IDENTITY_INIT;
+		camera_create_view_matrix(&state->camera, view);
 
 		pipeline_set_uniform_mat4(state->terrain.pipeline, 0, model);
 		pipeline_set_uniform_mat4(state->terrain.pipeline, 1, view);
-		pipeline_set_uniform_mat4(state->terrain.pipeline, 2, state->camera.projection);
 
 		mesh_draw(state->terrain.mesh);
 
