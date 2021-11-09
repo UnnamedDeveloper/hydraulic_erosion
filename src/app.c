@@ -19,28 +19,6 @@ static void on_window_close(event_bus_t *bus, void *user_pointer, window_close_e
 	state->running = false;
 }
 
-static void on_window_resize(event_bus_t *bus, void *user_pointer, window_resize_event_t *event)
-{
-	context_t *last_ctx = context_bind(event->window->context);
-	renderer_set_viewport(0, 0, event->size.w, event->size.h);
-
-	app_state_t *state = (app_state_t *)user_pointer;
-	camera_update_projection(&state->camera, window_get_size(event->window));
-
-	context_bind(last_ctx);
-}
-
-static void on_mouse_move(event_bus_t *bus, void *user_pointer, mouse_move_event_t *event)
-{
-	app_state_t *state = (app_state_t *)user_pointer;
-	camera_move(&state->camera, 0, (vec2){ -event->offset[0] / 10.0f, event->offset[1] / 10.0f });
-}
-
-static void on_mouse_scroll(event_bus_t *bus, void *user_pointer, mouse_scroll_event_t *event)
-{
-	app_state_t *state = (app_state_t *)user_pointer;
-	camera_move(&state->camera, event->offset[1], GLM_VEC2_ZERO);
-}
 
 static void init_libs()
 {
@@ -55,7 +33,11 @@ static void shutdown_libs()
 
 static void init_resources(app_state_t *state)
 {
-	camera_init(70.0f, -5.0f, window_get_size(state->window), &state->camera);
+	camera_init(&(camera_desc_t){
+		.fov = 70.0f,
+		.distance = -5.0f,
+		.window = state->window,
+	}, &state->camera);
 
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
@@ -76,16 +58,15 @@ bool app_init(app_state_t *state)
 	init_libs();
 
 	// prepare the environment
-	state->event_bus = event_bus_create(&(event_bus_desc_t){
-	});
+	state->event_bus = event_bus_create(&(event_bus_desc_t){});
 
 	state->window = window_create(&(window_desc_t){
 		.title = APP_NAME,
 		.size = { 1280, 720 },
 		.resizable = true,
 		.samples = 16,
+		.event_bus = state->event_bus,
 	});
-	window_attach_event_bus(state->window, state->event_bus);
 
 	context_bind(state->window->context);
 
@@ -94,9 +75,6 @@ bool app_init(app_state_t *state)
 
 	// subscribe to events
 	event_subscribe(state->event_bus, EVENT_TYPE_WINDOW_CLOSE, state, (event_callback_fn_t)on_window_close);
-	event_subscribe(state->event_bus, EVENT_TYPE_WINDOW_RESIZE, state, (event_callback_fn_t)on_window_resize);
-	event_subscribe(state->event_bus, EVENT_TYPE_MOUSE_MOVE, state, (event_callback_fn_t)on_mouse_move);
-	event_subscribe(state->event_bus, EVENT_TYPE_MOUSE_SCROLL, state, (event_callback_fn_t)on_mouse_scroll);
 
 	return true;
 }
@@ -110,8 +88,8 @@ void app_run(app_state_t *state)
 			.depth = 1,
 		});
 
-		camera_set_target(&state->camera, state->terrain->position);
-		terrain_draw(&state->camera, state->terrain);
+		camera_set_target(state->camera, state->terrain->position);
+		terrain_draw(state->camera, state->terrain);
 
 		window_swap_buffers(state->window);
 	}

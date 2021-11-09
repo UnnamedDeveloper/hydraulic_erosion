@@ -2,6 +2,28 @@
 
 #include <math.h>
 
+#include "debug/assert.h"
+#include "events/mouse_event.h"
+#include "events/window_event.h"
+
+static void on_window_resize(event_bus_t *bus, void *user_pointer, window_resize_event_t *event)
+{
+	camera_t *camera = (camera_t *)user_pointer;
+	camera_update_projection(camera);
+}
+
+static void on_mouse_move(event_bus_t *bus, void *user_pointer, mouse_move_event_t *event)
+{
+	camera_t *camera = (camera_t *)user_pointer;
+	camera_move(camera, 0, (vec2){ -event->offset[0] / 10.0f, event->offset[1] / 10.0f });
+}
+
+static void on_mouse_scroll(event_bus_t *bus, void *user_pointer, mouse_scroll_event_t *event)
+{
+	camera_t *camera = (camera_t *)user_pointer;
+	camera_move(camera, event->offset[1], GLM_VEC2_ZERO);
+}
+
 static void update_camera_position(camera_t *camera)
 {
 	float horizontal_dist = camera->distance * cos(glm_rad(camera->angle[1]));
@@ -13,19 +35,50 @@ static void update_camera_position(camera_t *camera)
 	camera->position[1] = camera->target[1] - vertical_dist;
 }
 
-void camera_init(float fov, float distance, uvec2 size, camera_t *camera)
+void camera_init(const camera_desc_t *desc, camera_t **camera)
 {
-	glm_vec3_zero(camera->target);
-	glm_vec3_zero(camera->position);
-	glm_vec2_zero(camera->angle);
-	camera->fov = fov;
-	camera->distance = distance;
-	camera_update_projection(camera, size);
-	update_camera_position(camera);
+	HE_ASSERT(camera != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A camera description is required");
+
+	camera_t *result = calloc(1, sizeof(camera_t));
+
+	result->window = desc->window;
+
+	glm_vec3_zero(result->target);
+	glm_vec3_zero(result->position);
+	glm_vec2_zero(result->angle);
+	result->fov = desc->fov;
+	result->distance = desc->distance;
+
+	result->target[0] = desc->target[0];
+	result->target[1] = desc->target[1];
+	result->target[2] = desc->target[2];
+
+	camera_update_projection(result);
+	update_camera_position(result);
+
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, result, (event_callback_fn_t)on_window_resize);
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE, result, (event_callback_fn_t)on_mouse_move);
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL, result, (event_callback_fn_t)on_mouse_scroll);
+
+	*camera = result;
 }
 
-void camera_update_projection(camera_t *camera, uvec2 size)
+camera_t *camera_create(const camera_desc_t *desc)
 {
+	camera_t *camera;
+	camera_init(desc, &camera);
+	return camera;
+}
+
+void camera_free(camera_t *camera)
+{
+	free(camera);
+}
+
+void camera_update_projection(camera_t *camera)
+{
+	uvec2 size = window_get_size(camera->window);
 	glm_perspective(glm_rad(camera->fov), (float)size.x / (float)size.y, 0.1f, 100.0f, camera->projection);
 }
 
@@ -43,7 +96,7 @@ void camera_move(camera_t *camera, float distance_offset, vec2 angle_offset)
 	update_camera_position(camera);
 }
 
-void camera_set_target(camera_t *camera, vec2 target)
+void camera_set_target(camera_t *camera, vec3 target)
 {
 	glm_vec3_copy(target, camera->target);
 	update_camera_position(camera);

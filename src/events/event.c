@@ -40,16 +40,22 @@ void event_publish(event_bus_t *bus, event_type_t type, event_t *event)
 	}
 }
 
-void event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer, event_callback_fn_t callback)
+uint32_t event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer, event_callback_fn_t callback)
 {
 	HE_ASSERT(bus != NULL, "Cannot subscribe to NULL");
 	HE_ASSERT(0 <= type < EVENT_TYPE_COUNT__, "Invalid event type");
 
-	bus->user_pointers[type][bus->callback_indices[type]] = user_pointer;
-	bus->callbacks[type][(bus->callback_indices[type]++)] = callback;
+	uint32_t id = bus->callback_indices[type];
+
+	bus->user_pointers[type][id] = user_pointer;
+	bus->callbacks[type][id] = callback;
+
+	bus->callback_indices[type]++;
+
+	return id;
 }
 
-void event_unsubscribe(event_bus_t *bus, event_type_t type, event_callback_fn_t callback)
+void event_unsubscribe(event_bus_t *bus, event_type_t type, uint32_t id)
 {
 	// TODO: implement unsubscribing
 	// NOTE: when unsubscribing, remember to shift callbacks to the left

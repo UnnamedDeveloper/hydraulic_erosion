@@ -20,13 +20,15 @@ typedef struct window_desc_t
 	bool resizable;
 
 	uint8_t samples;
+
+	event_bus_t *event_bus;
 } window_desc_t;
 
 typedef struct window_t
 {
 	GLFWwindow *glfw_window;
 	context_t *context;
-	event_bus_t *bus;
+	event_bus_t *event_bus;
 
 	struct
 	{
@@ -38,7 +40,6 @@ void window_init(const window_desc_t *desc, window_t **window);
 window_t *window_create(const window_desc_t *desc);
 void window_free(window_t *window);
 
-void window_attach_event_bus(window_t *window, event_bus_t *bus);
 uvec2 window_get_size(window_t *window);
 
 bool window_process_events(window_t *window);

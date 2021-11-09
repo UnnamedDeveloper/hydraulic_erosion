@@ -25,6 +25,8 @@ typedef struct context_t
 	buffer_t *cur_buffers[BUFFER_TYPE_COUNT__];
 	image_t *cur_images[IMAGE_MAX_BINDINGS__];
 	pipeline_t *cur_pipeline;
+	
+	uint32_t resize_cb_id;
 } context_t;
 
 void context_init(const context_desc_t *desc, context_t **context);

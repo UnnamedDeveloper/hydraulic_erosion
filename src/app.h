@@ -21,7 +21,7 @@ typedef struct app_state_t
 
 	terrain_t *terrain;
 
-	camera_t camera;
+	camera_t *camera;
 } app_state_t;
 
 bool app_init(app_state_t *state);

@@ -40,7 +40,7 @@ event_bus_t *event_bus_create(const event_bus_desc_t *desc);
 void event_bus_free(event_bus_t *event_bus);
 
 void event_publish(event_bus_t *bus, event_type_t type, event_t *event);
-void event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer, event_callback_fn_t callback);
-void event_unsubscribe(event_bus_t *bus, event_type_t type, event_callback_fn_t callback);
+uint32_t event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer, event_callback_fn_t callback);
+void event_unsubscribe(event_bus_t *bus, event_type_t type, uint32_t id);
 
 #endif /* __events_event_h__ */

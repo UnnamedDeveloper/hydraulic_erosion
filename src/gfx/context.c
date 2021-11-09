@@ -8,11 +8,19 @@
 #include <GLFW/glfw3.h>
 
 #include "debug/assert.h"
+#include "events/window_event.h"
 #include "window.h"
 
 static bool glad_loaded = false;
 
 static context_t *cur_context = NULL;
+
+static void on_window_resize(event_bus_t *bus, void *user_pointer, window_resize_event_t *event)
+{
+	context_t *last_ctx = context_bind((context_t *)user_pointer);
+	renderer_set_viewport(0, 0, event->size.w, event->size.h);
+	context_bind(last_ctx);
+}
 
 static void gl_debug_callback(GLenum source, GLenum type, uint32_t id, GLenum severity, GLsizei length, const char *msg, const void *user)
 {
@@ -87,6 +95,12 @@ void context_init(const context_desc_t *desc, context_t **context)
 	}
 #endif
 
+	// setup events
+	result->resize_cb_id = event_subscribe(desc->window->event_bus,
+		EVENT_TYPE_WINDOW_RESIZE,
+		result,
+		(event_callback_fn_t)on_window_resize);
+
 	// restore previous context
 	context_bind(last_ctx);
 
@@ -103,6 +117,9 @@ context_t *context_create(const context_desc_t *desc)
 void context_free(context_t *context)
 {
 	if (context == NULL) return;
+
+	// unsubscribe from events
+	event_unsubscribe(context->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, context->resize_cb_id);
 
 	// unbind context as current
 	if (cur_context == context)
