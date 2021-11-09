@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME}
 	"src/debug/assert.h" "src/debug/assert.c"
 	"src/events/event.h" "src/events/event.c" "src/events/key_event.h" "src/events/key_event.c" "src/events/mouse_event.h" "src/events/mouse_event.c" "src/events/window_event.h" "src/events/window_event.c"
 	"src/gfx/buffer.h" "src/gfx/buffer.c" "src/gfx/context.h" "src/gfx/context.c" "src/gfx/image.h" "src/gfx/image.c" "src/gfx/mesh.h" "src/gfx/mesh.c" "src/gfx/pipeline.h" "src/gfx/pipeline.c" "src/gfx/renderer.h" "src/gfx/renderer.c" "src/gfx/window.h" "src/gfx/window.c"
+	"src/io/file.h" "src/io/file.c"
 	"src/math/types.h" "src/math/types.c")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -32,7 +33,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE cglm)
 target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
-set(PROJECT_RESOURCES)
+set(PROJECT_RESOURCES
+	"res/shaders/terrain.vs.glsl" "res/shaders/terrain.fs.glsl")
 
 foreach(RESOURCE IN LISTS PROJECT_RESOURCES)
 	configure_file("${RESOURCE}" "${CMAKE_CURRENT_BINARY_DIR}/${RESOURCE}" COPYONLY)

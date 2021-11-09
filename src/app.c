@@ -11,6 +11,7 @@
 #include "events/window_event.h"
 #include "gfx/context.h"
 #include "gfx/renderer.h"
+#include "io/file.h"
 
 typedef struct vertex_t
 {
@@ -42,23 +43,6 @@ static void init_resources(app_state_t *state)
 		2, 1, 3,
 	};
 
-	const char *vs_source =
-		"#version 330 core\n"
-		"layout(location = 0) in vec3 i_pos;"
-		"uniform mat4 u_model;"
-		"uniform mat4 u_view;"
-		"uniform mat4 u_projection;"
-		"void main() {"
-		"	gl_Position = u_projection * u_view * u_model * vec4(i_pos, 1.0);"
-		"}";
-
-	const char *fs_source =
-		"#version 330 core\n"
-		"layout(location = 0) out vec4 o_col;"
-		"void main() {"
-		"	o_col = vec4(0.0);"
-		"}";
-
 	mesh_init(&(mesh_desc_t){
 		.dynamic = true,
 		.vertices = vertices,
@@ -67,6 +51,23 @@ static void init_resources(app_state_t *state)
 		.indices_size = sizeof(indices),
 		.index_count = sizeof(indices) / sizeof(indices[0]),
 	}, &state->terrain.mesh);
+
+	size_t file_size = 0;
+	FILE *file = NULL;
+
+	file = file_open("res/shaders/terrain.vs.glsl");
+	file_read(file, &file_size, NULL);
+	char *vs_source = calloc(1, file_size + 1);
+	file_read(file, &file_size, vs_source);
+	vs_source[file_size] = '\0';
+	file_close(file);
+
+	file = file_open("res/shaders/terrain.fs.glsl");
+	file_read(file, &file_size, NULL);
+	char *fs_source = calloc(1, file_size + 1);
+	fs_source[file_size] = '\0';
+	file_read(file, &file_size, fs_source);
+	file_close(file);
 
 	shader_t *vs = shader_create(&(shader_desc_t){
 		.type = SHADER_TYPE_VERTEX,
@@ -77,6 +78,9 @@ static void init_resources(app_state_t *state)
 		.type = SHADER_TYPE_FRAGMENT,
 		.source = fs_source,
 	});
+
+	free(vs_source);
+	free(fs_source);
 
 	pipeline_init(&(pipeline_desc_t){
 		.vs = vs,
@@ -91,6 +95,9 @@ static void init_resources(app_state_t *state)
 			.location[2] = { .type = UNIFORM_TYPE_MAT4, .name = "u_projection", },
 		},
 	}, &state->terrain.pipeline);
+
+	shader_free(vs);
+	shader_free(fs);
 }
 
 static void free_resources(app_state_t *state)
