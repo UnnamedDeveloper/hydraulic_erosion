@@ -45,8 +45,11 @@ static void init_resources(app_state_t *state)
 	const char *vs_source =
 		"#version 330 core\n"
 		"layout(location = 0) in vec3 i_pos;"
+		"uniform mat4 u_model;"
+		"uniform mat4 u_view;"
+		"uniform mat4 u_projection;"
 		"void main() {"
-		"	gl_Position = vec4(i_pos, 1.0);"
+		"	gl_Position = u_projection * u_view * u_model * vec4(i_pos, 1.0);"
 		"}";
 
 	const char *fs_source =
@@ -82,6 +85,11 @@ static void init_resources(app_state_t *state)
 			.location[0] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, position), },
 			.stride = sizeof(vertex_t),
 		},
+		.uniforms = {
+			.location[0] = { .type = UNIFORM_TYPE_MAT4, .name = "u_model",      },
+			.location[1] = { .type = UNIFORM_TYPE_MAT4, .name = "u_view",       },
+			.location[2] = { .type = UNIFORM_TYPE_MAT4, .name = "u_projection", },
+		},
 	}, &state->terrain.pipeline);
 }
 
@@ -101,6 +109,10 @@ static void on_window_resize(event_bus_t *bus, event_type_t type, window_resize_
 {
 	context_t *last_ctx = context_bind(event->window->context);
 	renderer_set_viewport(0, 0, event->size.w, event->size.h);
+
+	app_state_t *state = (app_state_t *)bus->user_pointer;
+	camera_update_projection(&state->camera, window_get_size(event->window));
+
 	context_bind(last_ctx);
 }
 
@@ -130,6 +142,8 @@ bool app_init(app_state_t *state)
 
 	init_resources(state);
 
+	camera_update_projection(&state->camera, window_get_size(state->window));
+
 	return true;
 }
 
@@ -143,6 +157,19 @@ void app_run(app_state_t *state)
 
 		// draw mesh
 		pipeline_bind(state->terrain.pipeline);
+
+		mat4 model      = GLM_MAT4_IDENTITY_INIT;
+		mat4 view       = GLM_MAT4_IDENTITY_INIT;
+		mat4 projection = GLM_MAT4_IDENTITY_INIT;
+
+		glm_rotate(model, glfwGetTime(), (vec3) { 0.0f, 0.0f, 1.0f });
+
+		glm_translate(view, (vec3) { 0.0f, 0.0f, -3.0f });
+
+		pipeline_set_uniform_mat4(state->terrain.pipeline, 0, model);
+		pipeline_set_uniform_mat4(state->terrain.pipeline, 1, view);
+		pipeline_set_uniform_mat4(state->terrain.pipeline, 2, state->camera.projection);
+
 		mesh_draw(state->terrain.mesh);
 
 		window_swap_buffers(state->window);

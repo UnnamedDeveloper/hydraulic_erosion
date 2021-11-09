@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+#include <cglm/cglm.h>
+
+#include "components/camera.h"
 #include "events/event.h"
 #include "gfx/mesh.h"
 #include "gfx/pipeline.h"
@@ -22,6 +25,8 @@ typedef struct app_state_t
 		mesh_t *mesh;
 		pipeline_t *pipeline;
 	} terrain;
+
+	camera_t camera;
 } app_state_t;
 
 bool app_init(app_state_t *state);

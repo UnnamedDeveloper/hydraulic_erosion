@@ -1,5 +1,5 @@
-#ifndef __components_mesh_h__
-#define __components_mesh_h__
+#ifndef __gfx_mesh_h__
+#define __gfx_mesh_h__
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -38,4 +38,4 @@ void mesh_set_data(mesh_t *mesh, const mesh_desc_t *desc);
 
 void mesh_draw(mesh_t *mesh);
 
-#endif /* __components_mesh_h__ */
+#endif /* __gfx_mesh_h__ */
