@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#include "components/mesh.h"
 #include "events/event.h"
+#include "gfx/mesh.h"
 #include "gfx/pipeline.h"
 #include "gfx/window.h"
 

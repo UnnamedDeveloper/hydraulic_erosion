@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 #include <glad/glad.h>
 
-#include "components/mesh.h"
+#include "mesh.h"
 
 typedef enum primitive_type_t
 {
