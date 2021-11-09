@@ -143,7 +143,7 @@ void app_run(app_state_t *state)
 
 		// draw mesh
 		pipeline_bind(state->terrain_pipeline);
-		renderer_draw_mesh(state->terrain);
+		mesh_draw(state->terrain);
 
 		window_swap_buffers(state->window);
 	}

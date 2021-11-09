@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "debug/assert.h"
-#include "gfx/buffer.h"
+#include "renderer.h"
 
 void mesh_init(const mesh_desc_t *desc, mesh_t **mesh)
 {
@@ -58,4 +58,23 @@ void mesh_set_data(mesh_t *mesh, const mesh_desc_t *desc)
 	buffer_set_data(mesh->indices, desc->indices_size, desc->indices);
 	mesh->vertex_count = desc->vertex_count;
 	mesh->index_count = desc->index_count;
+}
+
+void mesh_draw(mesh_t *mesh)
+{
+	HE_ASSERT(mesh != NULL, "Cannot draw NULL");
+	HE_ASSERT(mesh->vertices != NULL, "Cannot draw mesh without any vertices");
+
+	buffer_t *last_vtx_buf = buffer_bind(mesh->vertices);
+	if (mesh->indices != NULL)
+	{
+		buffer_t *last_idx_buf = buffer_bind(mesh->indices);
+		renderer_draw_indexed(mesh->index_count);
+		buffer_bind(last_idx_buf);
+	}
+	else
+	{
+		renderer_draw(mesh->vertex_count, 0);
+	}
+	buffer_bind(last_vtx_buf);
 }

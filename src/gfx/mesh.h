@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "gfx/buffer.h"
+#include "buffer.h"
 
 typedef struct mesh_desc_t
 {
@@ -35,5 +35,7 @@ mesh_t *mesh_create(const mesh_desc_t *desc);
 void mesh_free(mesh_t *mesh);
 
 void mesh_set_data(mesh_t *mesh, const mesh_desc_t *desc);
+
+void mesh_draw(mesh_t *mesh);
 
 #endif /* __components_mesh_h__ */

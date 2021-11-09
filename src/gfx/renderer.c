@@ -63,23 +63,3 @@ void renderer_draw_indexed(uint32_t count)
 		GL_UNSIGNED_INT,
 		0);
 }
-
-void renderer_draw_mesh(mesh_t *mesh)
-{
-	context_t *ctx = context_get_bound();
-	HE_ASSERT(ctx != NULL, "A bound context is required");
-	HE_ASSERT(mesh != NULL, "Cannot draw NULL as a mesh");
-	HE_ASSERT(mesh->vertices != NULL, "Mesh doesn't have a valid vertex buffer");
-
-	buffer_bind(mesh->vertices);
-	buffer_bind(mesh->indices);
-
-	if (mesh->indices != NULL)
-	{
-		renderer_draw_indexed(mesh->index_count);
-	}
-	else
-	{
-		renderer_draw(mesh->vertex_count, 0);
-	}
-}
