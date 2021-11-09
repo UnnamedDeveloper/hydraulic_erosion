@@ -26,11 +26,13 @@ static void on_key(GLFWwindow *glfw_window, int key, int scancode, int action, i
 	{
 		key_press_event_t event = { .key = key };
 		event_publish(window->event_bus, EVENT_TYPE_KEY_PRESS, (event_t *)&event);
+		break;
 	}
 	case GLFW_RELEASE:
 	{
 		key_release_event_t event = { .key = key };
 		event_publish(window->event_bus, EVENT_TYPE_KEY_RELEASE, (event_t *)&event);
+		break;
 	}
 	}
 }
@@ -71,11 +73,13 @@ static void on_mouse_button(GLFWwindow *glfw_window, int button, int action, int
 	{
 		mouse_press_event_t event = { .button = button };
 		event_publish(window->event_bus, EVENT_TYPE_MOUSE_PRESS, (event_t *)&event);
+		break;
 	}
 	case GLFW_RELEASE:
 	{
 		mouse_release_event_t event = { .button = button };
 		event_publish(window->event_bus, EVENT_TYPE_MOUSE_RELEASE, (event_t *)&event);
+		break;
 	}
 	}
 }

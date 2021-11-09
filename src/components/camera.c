@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#include <GLFW/glfw3.h>
+
 #include "debug/assert.h"
 #include "events/mouse_event.h"
 #include "events/window_event.h"
@@ -15,7 +17,22 @@ static void on_window_resize(event_bus_t *bus, void *user_pointer, window_resize
 static void on_mouse_move(event_bus_t *bus, void *user_pointer, mouse_move_event_t *event)
 {
 	camera_t *camera = (camera_t *)user_pointer;
-	camera_move(camera, 0, (vec2){ -event->offset[0] / 10.0f, event->offset[1] / 10.0f });
+	if (camera->move)
+		camera_move(camera, 0, (vec2){ -event->offset[0] / 5.0f, event->offset[1] / 5.0f });
+}
+
+static void on_mouse_press(event_bus_t *bus, void *user_pointer, mouse_press_event_t *event)
+{
+	camera_t *camera = (camera_t *)user_pointer;
+	if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+		camera->move = true;
+}
+
+static void on_mouse_release(event_bus_t *bus, void *user_pointer, mouse_release_event_t *event)
+{
+	camera_t *camera = (camera_t *)user_pointer;
+	if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+		camera->move = false;
 }
 
 static void on_mouse_scroll(event_bus_t *bus, void *user_pointer, mouse_scroll_event_t *event)
@@ -58,8 +75,10 @@ void camera_init(const camera_desc_t *desc, camera_t **camera)
 	update_camera_position(result);
 
 	event_subscribe(desc->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, result, (event_callback_fn_t)on_window_resize);
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE, result, (event_callback_fn_t)on_mouse_move);
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL, result, (event_callback_fn_t)on_mouse_scroll);
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    result, (event_callback_fn_t)on_mouse_move);
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  result, (event_callback_fn_t)on_mouse_scroll);
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   result, (event_callback_fn_t)on_mouse_press);
+	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, result, (event_callback_fn_t)on_mouse_release);
 
 	*camera = result;
 }

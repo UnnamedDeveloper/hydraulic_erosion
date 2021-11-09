@@ -25,6 +25,8 @@ typedef struct camera_t
 	mat4 projection;
 	vec3 position;
 
+	bool move;
+
 	window_t *window;
 
 } camera_t;
