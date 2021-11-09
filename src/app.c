@@ -63,7 +63,7 @@ static void init_resources(app_state_t *state)
 		.indices = indices,
 		.indices_size = sizeof(indices),
 		.index_count = sizeof(indices) / sizeof(indices[0]),
-	}, &state->terrain);
+	}, &state->terrain.mesh);
 
 	shader_t *vs = shader_create(&(shader_desc_t){
 		.type = SHADER_TYPE_VERTEX,
@@ -82,13 +82,13 @@ static void init_resources(app_state_t *state)
 			.location[0] = { .type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(vertex_t, position), },
 			.stride = sizeof(vertex_t),
 		},
-	}, &state->terrain_pipeline);
+	}, &state->terrain.pipeline);
 }
 
 static void free_resources(app_state_t *state)
 {
-	mesh_free(state->terrain);
-	pipeline_free(state->terrain_pipeline);
+	mesh_free(state->terrain.mesh);
+	pipeline_free(state->terrain.pipeline);
 }
 
 static void on_window_close(event_bus_t *bus, event_type_t type, window_close_event_t *event)
@@ -142,8 +142,8 @@ void app_run(app_state_t *state)
 		});
 
 		// draw mesh
-		pipeline_bind(state->terrain_pipeline);
-		mesh_draw(state->terrain);
+		pipeline_bind(state->terrain.pipeline);
+		mesh_draw(state->terrain.mesh);
 
 		window_swap_buffers(state->window);
 	}

@@ -17,8 +17,11 @@ typedef struct app_state_t
 	window_t *window;
 	event_bus_t *event_bus;
 
-	mesh_t *terrain;
-	pipeline_t *terrain_pipeline;
+	struct
+	{
+		mesh_t *mesh;
+		pipeline_t *pipeline;
+	} terrain;
 } app_state_t;
 
 bool app_init(app_state_t *state);
