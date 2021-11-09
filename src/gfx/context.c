@@ -128,6 +128,11 @@ context_t *context_bind(context_t *context)
 			{
 				buffer_bind_to((buffer_type_t)i, cur_context->cur_buffers[i]);
 			}
+			for (int i = 0; i < IMAGE_MAX_BINDINGS__; i++)
+			{
+				image_bind(i, cur_context->cur_images[i]);
+			}
+			pipeline_bind(cur_context->cur_pipeline);
 		}
 	}
 	else

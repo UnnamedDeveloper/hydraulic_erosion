@@ -7,7 +7,7 @@
 
 // this might not apply. this is the max image binding count, not how many
 // images the fragment shader can access.
-#define IMAGE_MAX_BINDINGS__ (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
+#define IMAGE_MAX_BINDINGS__ (16)
 
 typedef enum image_type_t
 {

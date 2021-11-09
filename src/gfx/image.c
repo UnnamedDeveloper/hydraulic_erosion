@@ -127,7 +127,7 @@ image_t *image_bind(uint8_t location, image_t *image)
 	}
 	else
 	{
-		glBindTexture(get_gl_image_type(last_img->type), 0);
+		// dummy
 	}
 
 	return last_img;
