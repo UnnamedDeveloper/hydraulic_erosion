@@ -139,6 +139,7 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 	result->layout = desc->layout;
 	result->primitive_type = desc->primitive_type;
 	result->depth_test = desc->depth_test;
+	result->culling = desc->culling;
 
 	glAttachShader(result->id, desc->vs->id);
 	glAttachShader(result->id, desc->fs->id);
@@ -213,6 +214,15 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 		else
 		{
 			glDisable(GL_DEPTH_TEST);
+		}
+
+		if (pipeline->culling)
+		{
+			glEnable(GL_CULL_FACE);
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
 		}
 
 		// TODO: Disable previous pipeline attributes
