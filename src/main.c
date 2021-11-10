@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "app.h"
 
 int main()
@@ -9,4 +11,9 @@ int main()
 	app_shutdown(&state);
 
 	return 0;
+}
+
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+{
+	return main();
 }

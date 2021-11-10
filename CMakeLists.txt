@@ -5,7 +5,7 @@ add_subdirectory("deps/cglm")
 add_subdirectory("deps/glad")
 add_subdirectory("deps/glfw")
 
-add_executable(${PROJECT_NAME}
+set(PROJECT_SOURCES
 	"src/main.c"
 	"src/app.h" "src/app.c"
 	"src/components/camera.h" "src/components/camera.c" "src/components/terrain.h" "src/components/terrain.c"
@@ -14,6 +14,12 @@ add_executable(${PROJECT_NAME}
 	"src/gfx/buffer.h" "src/gfx/buffer.c" "src/gfx/context.h" "src/gfx/context.c" "src/gfx/image.h" "src/gfx/image.c" "src/gfx/mesh.h" "src/gfx/mesh.c" "src/gfx/pipeline.h" "src/gfx/pipeline.c" "src/gfx/renderer.h" "src/gfx/renderer.c" "src/gfx/window.h" "src/gfx/window.c"
 	"src/io/file.h" "src/io/file.c"
 	"src/math/types.h" "src/math/types.c")
+
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+	add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+else()
+	add_executable(${PROJECT_NAME} WIN32 ${PROJECT_SOURCES})
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	C_STANDARD 99
