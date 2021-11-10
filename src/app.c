@@ -1,24 +1,17 @@
 #include "app.h"
 
-#include <stdio.h>
 #include <string.h>
 
-#include <GLFW/glfw3.h>
-#include <stb_image.h>
-
 #include "debug/assert.h"
-#include "events/mouse_event.h"
 #include "events/window_event.h"
 #include "gfx/context.h"
 #include "gfx/renderer.h"
-#include "io/file.h"
 
 static void on_window_close(event_bus_t *bus, void *user_pointer, window_close_event_t *event)
 {
 	app_state_t *state = (app_state_t *)user_pointer;
 	state->running = false;
 }
-
 
 static void init_libs()
 {
