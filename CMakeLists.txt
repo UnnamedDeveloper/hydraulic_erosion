@@ -34,7 +34,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 set(PROJECT_RESOURCES
-	"res/shaders/terrain.vs.glsl" "res/shaders/terrain.fs.glsl")
+	"res/shaders/terrain.vs.glsl" "res/shaders/terrain.fs.glsl" "res/shaders/terrain_wireframe.fs.glsl")
 
 foreach(RESOURCE IN LISTS PROJECT_RESOURCES)
 	configure_file("${RESOURCE}" "${CMAKE_CURRENT_BINARY_DIR}/${RESOURCE}" COPYONLY)

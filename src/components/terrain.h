@@ -21,6 +21,9 @@ typedef struct terrain_t
 
 	mesh_t *mesh;
 	pipeline_t *pipeline;
+#ifndef NDEBUG
+	pipeline_t *pipeline_wireframe;
+#endif
 } terrain_t;
 
 void terrain_init(const terrain_desc_t *desc, terrain_t **terrain);

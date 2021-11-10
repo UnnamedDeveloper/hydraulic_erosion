@@ -42,7 +42,7 @@ static void init_resources(app_state_t *state)
 
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
-		.size = { 10, 10 },
+		.size = { 50, 50 },
 	}, &state->terrain);
 }
 
