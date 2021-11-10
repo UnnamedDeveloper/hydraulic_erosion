@@ -85,8 +85,11 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 {
 	HE_ASSERT(terrain != NULL, "Cannot initialize NULL");
 	HE_ASSERT(desc != NULL, "A terrain description is required");
+	HE_ASSERT(desc->noise_function != NULL, "A terrain noise function is required");
 
 	terrain_t *result = calloc(1, sizeof(terrain_t));
+
+	result->noise_function = desc->noise_function;
 
 	terrain_init_pipeline(result);
 	terrain_init_mesh(result);
@@ -146,7 +149,6 @@ void terrain_draw(camera_t *camera, terrain_t *terrain)
 	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 1, view);
 	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 2, camera->projection);
 
-
 	mesh_draw(terrain->mesh);
 #endif
 
@@ -172,7 +174,7 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 		for (int x = 0; x < size.w; x++)
 		{
 			vertices[i].position[0] = (float)x - (size.w / 2.0f);
-			vertices[i].position[1] = 0;
+			vertices[i].position[1] = terrain->noise_function(x, z);
 			vertices[i].position[2] = (float)z - (size.h / 2.0f);
 
 			vertices[i].color[0] = ((float)x + 1.0f) / size.w;

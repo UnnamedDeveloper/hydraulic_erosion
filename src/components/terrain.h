@@ -1,6 +1,8 @@
 #ifndef __components_terrain_h__
 #define __components_terrain_h__
 
+#include <stdint.h>
+
 #include <cglm/cglm.h>
 
 #include "gfx/mesh.h"
@@ -8,16 +10,21 @@
 #include "math/types.h"
 #include "camera.h"
 
+typedef float(*terrain_noise_function_t)(uint32_t, uint32_t);
+
 typedef struct terrain_desc_t
 {
 	vec3 position;
 	uvec2 size;
+	terrain_noise_function_t noise_function;
 } terrain_desc_t;
 
 typedef struct terrain_t
 {
 	vec3 position;
 	uvec2 size;
+
+	terrain_noise_function_t noise_function;
 
 	mesh_t *mesh;
 	pipeline_t *pipeline;

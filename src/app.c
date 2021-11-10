@@ -24,6 +24,11 @@ static void shutdown_libs()
 	glfwTerminate();
 }
 
+static float linear_growth(uint32_t x, uint32_t z)
+{
+	return x + z;
+}
+
 static void init_resources(app_state_t *state)
 {
 	camera_init(&(camera_desc_t){
@@ -36,6 +41,7 @@ static void init_resources(app_state_t *state)
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
 		.size = { 50, 50 },
+		.noise_function = (terrain_noise_function_t)linear_growth,
 	}, &state->terrain);
 }
 
@@ -77,6 +83,7 @@ void app_run(app_state_t *state)
 {
 	while (state->running && window_process_events(state->window))
 	{
+		// render
 		renderer_clear(&(cmd_clear_desc_t){
 			.color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			.depth = 1,
