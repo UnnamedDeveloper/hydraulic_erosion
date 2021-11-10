@@ -64,12 +64,10 @@ void camera_init(const camera_desc_t *desc, camera_t **camera)
 	glm_vec3_zero(result->target);
 	glm_vec3_zero(result->position);
 	glm_vec2_zero(result->angle);
+	glm_vec2_copy(desc->angle, result->angle);
 	result->fov = desc->fov;
 	result->distance = desc->distance;
-
-	result->target[0] = desc->target[0];
-	result->target[1] = desc->target[1];
-	result->target[2] = desc->target[2];
+	glm_vec3_copy(desc->target, result->target);
 
 	camera_update_projection(result);
 	update_camera_position(result);

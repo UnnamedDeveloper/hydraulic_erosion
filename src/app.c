@@ -35,6 +35,7 @@ static void init_resources(app_state_t *state)
 {
 	camera_init(&(camera_desc_t){
 		.fov = 70.0f,
+		.angle = { 0.0f, 45.0f, },
 		.distance = -50.0f,
 		.window = state->window,
 	}, &state->camera);

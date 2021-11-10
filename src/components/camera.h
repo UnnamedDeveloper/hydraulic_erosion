@@ -11,6 +11,7 @@ typedef struct camera_desc_t
 	float fov;
 	float distance;
 	vec3 target;
+	vec2 angle;
 	window_t *window;
 } camera_desc_t;
 
