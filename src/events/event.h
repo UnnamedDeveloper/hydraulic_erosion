@@ -26,6 +26,7 @@ typedef void(*event_callback_fn_t)(event_bus_t *, void *, event_t *);
 
 typedef struct event_bus_desc_t
 {
+	void *dummy; // windows requires all structs to have at least one member
 } event_bus_desc_t;
 
 typedef struct event_bus_t

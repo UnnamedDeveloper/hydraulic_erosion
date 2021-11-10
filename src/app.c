@@ -58,7 +58,7 @@ bool app_init(app_state_t *state)
 	init_libs();
 
 	// prepare the environment
-	state->event_bus = event_bus_create(&(event_bus_desc_t){});
+	state->event_bus = event_bus_create(&(event_bus_desc_t){ 0 });
 
 	state->window = window_create(&(window_desc_t){
 		.title = APP_NAME,
