@@ -140,6 +140,7 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 	result->primitive_type = desc->primitive_type;
 	result->depth_test = desc->depth_test;
 	result->culling = desc->culling;
+	result->wireframe = desc->wireframe;
 
 	glAttachShader(result->id, desc->vs->id);
 	glAttachShader(result->id, desc->fs->id);
@@ -224,6 +225,8 @@ pipeline_t *pipeline_bind(pipeline_t *pipeline)
 		{
 			glDisable(GL_CULL_FACE);
 		}
+
+		glPolygonMode(GL_FRONT_AND_BACK, pipeline->wireframe ? GL_LINE : GL_FILL);
 
 		// TODO: Disable previous pipeline attributes
 		for (int i = 0; i < PIPELINE_MAX_ATTRIBS__; i++)

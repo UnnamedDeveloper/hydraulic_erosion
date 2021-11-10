@@ -6,6 +6,7 @@
 #include "events/window_event.h"
 #include "gfx/context.h"
 #include "gfx/renderer.h"
+#include "math/noise.h"
 
 static void on_window_close(event_bus_t *bus, void *user_pointer, window_close_event_t *event)
 {
@@ -24,11 +25,6 @@ static void shutdown_libs()
 	glfwTerminate();
 }
 
-static float linear_growth(uint32_t x, uint32_t z)
-{
-	return x + z;
-}
-
 static void init_resources(app_state_t *state)
 {
 	camera_init(&(camera_desc_t){
@@ -40,8 +36,8 @@ static void init_resources(app_state_t *state)
 
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
-		.size = { 50, 50 },
-		.noise_function = (terrain_noise_function_t)linear_growth,
+		.size = { 150, 150 },
+		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
 	}, &state->terrain);
 }
 

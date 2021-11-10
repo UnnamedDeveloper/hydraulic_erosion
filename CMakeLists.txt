@@ -13,7 +13,7 @@ set(PROJECT_SOURCES
 	"src/events/event.h" "src/events/event.c" "src/events/key_event.h" "src/events/key_event.c" "src/events/mouse_event.h" "src/events/mouse_event.c" "src/events/window_event.h" "src/events/window_event.c"
 	"src/gfx/buffer.h" "src/gfx/buffer.c" "src/gfx/context.h" "src/gfx/context.c" "src/gfx/image.h" "src/gfx/image.c" "src/gfx/mesh.h" "src/gfx/mesh.c" "src/gfx/pipeline.h" "src/gfx/pipeline.c" "src/gfx/renderer.h" "src/gfx/renderer.c" "src/gfx/window.h" "src/gfx/window.c"
 	"src/io/file.h" "src/io/file.c"
-	"src/math/types.h" "src/math/types.c")
+	"src/math/types.h" "src/math/types.c" "src/math/noise.h" "src/math/noise.c")
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

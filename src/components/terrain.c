@@ -62,9 +62,8 @@ static void terrain_init_pipeline(terrain_t *terrain)
 #ifndef NDEBUG
 	shader_t *wireframe_fs = create_shader("res/shaders/terrain_wireframe.fs.glsl", SHADER_TYPE_FRAGMENT);
 
-	desc.primitive_type = PRIMITIVE_TYPE_LINE_STRIP;
+	desc.wireframe = true,
 	desc.fs = wireframe_fs;
-	desc.depth_test = false;
 	pipeline_init(&desc, &terrain->pipeline_wireframe);
 
 	shader_free(wireframe_fs);
@@ -176,7 +175,7 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 			vertices[i].position[0] = (float)x - (size.w / 2.0f);
 			vertices[i].position[1] = terrain->noise_function(x, z);
 			vertices[i].position[2] = (float)z - (size.h / 2.0f);
-
+			
 			vertices[i].color[0] = ((float)x + 1.0f) / size.w;
 			vertices[i].color[1] = ((float)x + 1) * ((float)z + 1) / (size.w * size.h);
 			vertices[i].color[2] = ((float)z + 1.0f) / size.h;

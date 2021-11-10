@@ -114,6 +114,7 @@ typedef struct pipeline_desc_t
 	primitive_type_t primitive_type;
 	bool depth_test;
 	bool culling;
+	bool wireframe;
 } pipeline_desc_t;
 
 typedef struct pipeline_t
@@ -124,6 +125,7 @@ typedef struct pipeline_t
 	pipeline_uniform_t uniforms[PIPELINE_MAX_UNIFORMS__];
 	bool depth_test;
 	bool culling;
+	bool wireframe;
 } pipeline_t;
 
 bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline);
