@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include "app.h"
 
@@ -13,7 +15,9 @@ int main()
 	return 0;
 }
 
+#ifdef _WIN32
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
 	return main();
 }
+#endif
