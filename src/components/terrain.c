@@ -8,7 +8,6 @@
 typedef struct terrain_vertex_t
 {
 	vec3 position;
-	vec3 color;
 	vec3 normal;
 } terrain_vertex_t;
 
@@ -47,8 +46,7 @@ static void terrain_init_pipeline(terrain_t *terrain)
 		.fs = fs,
 		.layout = {
 			.location[0] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, position), },
-			.location[1] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, color),    },
-			.location[2] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, normal),    },
+			.location[1] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, normal),    },
 			.stride = sizeof(terrain_vertex_t),
 		},
 		.uniforms = {
@@ -183,10 +181,6 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 			vertices[i].position[1] = terrain->noise_function(x, z);
 			vertices[i].position[2] = (float)z - (size.h / 2.0f);
 			
-			vertices[i].color[0] = ((float)x + 1.0f) / size.w;
-			vertices[i].color[1] = ((float)x + 1) * ((float)z + 1) / (size.w * size.h);
-			vertices[i].color[2] = ((float)z + 1.0f) / size.h;
-
 			glm_vec3_copy(GLM_VEC3_ZERO, vertices[i].normal);
 
 			i++;

@@ -36,7 +36,7 @@ static void init_resources(app_state_t *state)
 
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
-		.size = { 2000, 2000 },
+		.size = { 200, 200 },
 		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
 	}, &state->terrain);
 }
