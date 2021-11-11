@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include <stb_image.h>
+
 #include "debug/assert.h"
 #include "events/window_event.h"
 #include "gfx/context.h"
@@ -29,6 +31,7 @@ static void init_resources(app_state_t *state)
 {
 	camera_init(&(camera_desc_t){
 		.fov = 70.0f,
+		.sensitivity = 0.25f,
 		.angle = { 0.0f, 45.0f, },
 		.distance = -50.0f,
 		.window = state->window,
@@ -85,7 +88,6 @@ void app_run(app_state_t *state)
 			.depth = 1,
 		});
 
-		camera_set_target(state->camera, state->terrain->position);
 		terrain_draw(state->camera, (vec3) { 0.0f, 100.0f, 0.0f }, state->terrain);
 
 		window_swap_buffers(state->window);

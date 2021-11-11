@@ -10,6 +10,7 @@ typedef struct camera_desc_t
 {
 	float fov;
 	float distance;
+	float sensitivity;
 	vec3 target;
 	vec2 angle;
 	window_t *window;
@@ -22,11 +23,13 @@ typedef struct camera_t
 	float distance;
 
 	float fov;
+	float sensitivity;
 
 	mat4 projection;
 	vec3 position;
 
 	bool move;
+	bool rotate;
 
 	window_t *window;
 
@@ -38,7 +41,7 @@ void camera_free(camera_t *camera);
 
 void camera_update_projection(camera_t *camera);
 void camera_create_view_matrix(camera_t *camera, mat4 view);
-void camera_move(camera_t *camera, float distance_offset, vec2 angle_offset);
+void camera_move(camera_t *camera, float distance_offset, vec3 target_offset, vec2 angle_offset);
 void camera_set_target(camera_t *camera, vec3 target);
 
 #endif /* __components_camera_h__ */

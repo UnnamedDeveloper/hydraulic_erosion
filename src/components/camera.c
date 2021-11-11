@@ -18,27 +18,58 @@ static void on_mouse_move(event_bus_t *bus, void *user_pointer, mouse_move_event
 {
 	camera_t *camera = (camera_t *)user_pointer;
 	if (camera->move)
-		camera_move(camera, 0, (vec2){ -event->offset[0] / 5.0f, event->offset[1] / 5.0f });
+	{
+		vec2 xoff = { -(event->offset[0] * camera->sensitivity), -(event->offset[1] * camera->sensitivity) };
+		glm_vec2_rotate(xoff, -glm_rad(camera->angle[0]), xoff);
+
+		vec3 offset = GLM_VEC3_ZERO_INIT;
+		offset[0] += xoff[0];
+		offset[2] += xoff[1];
+
+		camera_move(camera, 0, offset, GLM_VEC2_ZERO);
+	}
+	else if (camera->rotate)
+	{
+		camera_move(camera,
+			0,
+			GLM_VEC3_ZERO,
+			(vec2){
+				-event->offset[0] * camera->sensitivity,
+				event->offset[1] * camera->sensitivity
+			});
+	}
 }
 
 static void on_mouse_press(event_bus_t *bus, void *user_pointer, mouse_press_event_t *event)
 {
 	camera_t *camera = (camera_t *)user_pointer;
 	if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+	{
 		camera->move = true;
+	}
+	else if (event->button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+		camera->rotate = true;
+	}
 }
 
 static void on_mouse_release(event_bus_t *bus, void *user_pointer, mouse_release_event_t *event)
 {
 	camera_t *camera = (camera_t *)user_pointer;
 	if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+	{
 		camera->move = false;
+	}
+	else if (event->button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+		camera->rotate = false;
+	}
 }
 
 static void on_mouse_scroll(event_bus_t *bus, void *user_pointer, mouse_scroll_event_t *event)
 {
 	camera_t *camera = (camera_t *)user_pointer;
-	camera_move(camera, event->offset[1], GLM_VEC2_ZERO);
+	camera_move(camera, event->offset[1], GLM_VEC3_ZERO, GLM_VEC2_ZERO);
 }
 
 static void update_camera_position(camera_t *camera)
@@ -60,6 +91,7 @@ void camera_init(const camera_desc_t *desc, camera_t **camera)
 	camera_t *result = calloc(1, sizeof(camera_t));
 
 	result->window = desc->window;
+	result->sensitivity = desc->sensitivity;
 
 	glm_vec3_zero(result->target);
 	glm_vec3_zero(result->position);
@@ -105,10 +137,12 @@ void camera_create_view_matrix(camera_t *camera, mat4 view)
 	glm_lookat(camera->position, camera->target, (vec3){ 0.0f, 1.0f, 0.0f }, view);
 }
 
-void camera_move(camera_t *camera, float distance_offset, vec2 angle_offset)
+void camera_move(camera_t *camera, float distance_offset, vec3 target_offset, vec2 angle_offset)
 {
 	camera->distance += distance_offset;
 	glm_vec2_add(camera->angle, angle_offset, camera->angle);
+
+	glm_vec3_add(camera->target, target_offset, camera->target);
 
 	update_camera_position(camera);
 }
