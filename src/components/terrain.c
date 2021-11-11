@@ -9,6 +9,7 @@ typedef struct terrain_vertex_t
 {
 	vec3 position;
 	vec3 color;
+	vec3 normal;
 } terrain_vertex_t;
 
 static shader_t *create_shader(const char *path, shader_type_t type)
@@ -47,12 +48,15 @@ static void terrain_init_pipeline(terrain_t *terrain)
 		.layout = {
 			.location[0] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, position), },
 			.location[1] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, color),    },
+			.location[2] = {.type = ATTRIBUTE_TYPE_FLOAT3, .offset = offsetof(terrain_vertex_t, normal),    },
 			.stride = sizeof(terrain_vertex_t),
 		},
 		.uniforms = {
-			.location[0] = {.type = UNIFORM_TYPE_MAT4, .name = "u_model",      },
-			.location[1] = {.type = UNIFORM_TYPE_MAT4, .name = "u_view",       },
-			.location[2] = {.type = UNIFORM_TYPE_MAT4, .name = "u_projection", },
+			.location[0] = {.type = UNIFORM_TYPE_MAT4,   .name = "u_model",      },
+			.location[1] = {.type = UNIFORM_TYPE_MAT4,   .name = "u_view",       },
+			.location[2] = {.type = UNIFORM_TYPE_MAT4,   .name = "u_projection", },
+			.location[3] = {.type = UNIFORM_TYPE_FLOAT3, .name = "u_light_pos",  },
+			.location[4] = {.type = UNIFORM_TYPE_FLOAT3, .name = "u_camera_pos", },
 		},
 		.depth_test = true,
 		.culling = true,
@@ -119,10 +123,11 @@ void terrain_free(terrain_t *terrain)
 	free(terrain);
 }
 
-void terrain_draw(camera_t *camera, terrain_t *terrain)
+void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain)
 {
 	HE_ASSERT(terrain != NULL, "Cannot draw NULL terrain");
-	HE_ASSERT(camera != NULL, "Cannot draw terrain with NULL camera");
+	HE_ASSERT(light_pos != NULL, "Cannot draw terrain without a light");
+	HE_ASSERT(camera != NULL, "Cannot draw terrain without a camera");
 
 	// calculate the cordinate system
 	mat4 model = GLM_MAT4_IDENTITY_INIT;
@@ -137,6 +142,8 @@ void terrain_draw(camera_t *camera, terrain_t *terrain)
 	pipeline_set_uniform_mat4(terrain->pipeline, 0, model);
 	pipeline_set_uniform_mat4(terrain->pipeline, 1, view);
 	pipeline_set_uniform_mat4(terrain->pipeline, 2, camera->projection);
+	pipeline_set_uniformf3(terrain->pipeline, 3, light_pos);
+	pipeline_set_uniformf3(terrain->pipeline, 4, camera->position);
 
 	mesh_draw(terrain->mesh);
 
@@ -180,6 +187,8 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 			vertices[i].color[1] = ((float)x + 1) * ((float)z + 1) / (size.w * size.h);
 			vertices[i].color[2] = ((float)z + 1.0f) / size.h;
 
+			glm_vec3_copy(GLM_VEC3_ZERO, vertices[i].normal);
+
 			i++;
 		}
 	}
@@ -190,17 +199,54 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 	{
 		for (int x = 0; x < size.w - 1; x++)
 		{
-			indices[index + 0] = vertex;
-			indices[index + 1] = vertex + (size.w - 1) + 1;
-			indices[index + 2] = vertex + 1;
-			indices[index + 3] = vertex + 1;
-			indices[index + 4] = vertex + (size.w - 1) + 1;
-			indices[index + 5] = vertex + (size.w - 1) + 2;
+			vec3 p, ba, ca;
+			int a, b, c;
+
+			// -- tri 1
+			// indices
+			a = vertex;
+			b = vertex + (size.w - 1) + 1;
+			c = vertex + 1;
+			indices[index + 0] = a;
+			indices[index + 1] = b;
+			indices[index + 2] = c;
+
+			// normals
+			glm_vec3_sub(vertices[b].position, vertices[a].position, ba);
+			glm_vec3_sub(vertices[c].position, vertices[a].position, ca);
+			glm_vec3_cross(ba, ca, p);
+
+			glm_vec3_add(vertices[a].normal, p, vertices[a].normal);
+			glm_vec3_add(vertices[b].normal, p, vertices[b].normal);
+			glm_vec3_add(vertices[c].normal, p, vertices[c].normal);
+
+			// -- tri 2
+			// indices
+			a = vertex + 1;
+			b = vertex + (size.w - 1) + 1;
+			c = vertex + (size.w - 1) + 2;
+			indices[index + 3] = a;
+			indices[index + 4] = b;
+			indices[index + 5] = c;
+
+			// normals
+			glm_vec3_sub(vertices[b].position, vertices[a].position, ba);
+			glm_vec3_sub(vertices[c].position, vertices[a].position, ca);
+			glm_vec3_cross(ba, ca, p);
+
+			glm_vec3_add(vertices[a].normal, p, vertices[a].normal);
+			glm_vec3_add(vertices[b].normal, p, vertices[b].normal);
+			glm_vec3_add(vertices[c].normal, p, vertices[c].normal);
 
 			vertex++;
 			index += 6;
 		}
 		vertex++;
+	}
+
+	for (int i = 0; i < vertex_count; i++)
+	{
+		glm_vec3_normalize(vertices[i].normal);
 	}
 
 	mesh_set_data(terrain->mesh, &(mesh_desc_t){

@@ -72,6 +72,7 @@ typedef enum pipeline_uniform_type_t
 {
 	UNIFORM_TYPE_NONE,
 	UNIFORM_TYPE_FLOAT,
+	UNIFORM_TYPE_FLOAT3,
 	UNIFORM_TYPE_MAT4,
 	UNIFORM_TYPE_COUNT__,
 } pipeline_uniform_type_t;
@@ -135,6 +136,7 @@ void pipeline_free(pipeline_t *pipeline);
 pipeline_t *pipeline_bind(pipeline_t *pipeline);
 
 void pipeline_set_uniformf(pipeline_t *pipeline, int location, float data);
+void pipeline_set_uniformf3(pipeline_t *pipeline, int location, vec3 data);
 void pipeline_set_uniform_mat4(pipeline_t *pipeline, int location, mat4 data);
 
 #endif /* __gfx_pipeline_h__ */

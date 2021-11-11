@@ -17,7 +17,7 @@ static float smooth_interpolate(float a, float b, float w)
 
 static float random_2d(int x, int y)
 {
-    int h = (x + 500) * 374761393 + (y + 500) * 668265263;
+    int h = x * 374761393 + y * 668265263;
     h = (h ^ (h >> 13)) * 1274126177;
     return h ^ (h >> 16);
 }

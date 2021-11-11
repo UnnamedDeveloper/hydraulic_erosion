@@ -261,6 +261,14 @@ void pipeline_set_uniformf(pipeline_t *pipeline, int location, float data)
 	pipeline_bind(last_pip);
 }
 
+void pipeline_set_uniformf3(pipeline_t *pipeline, int location, vec3 data)
+{
+	validate_uniform_function(pipeline, location, UNIFORM_TYPE_FLOAT3);
+	pipeline_t *last_pip = pipeline_bind(pipeline);
+	glUniform3f(pipeline->uniforms[location].gl_location, data[0], data[1], data[2]);
+	pipeline_bind(last_pip);
+}
+
 void pipeline_set_uniform_mat4(pipeline_t *pipeline, int location, mat4 data)
 {
 	validate_uniform_function(pipeline, location, UNIFORM_TYPE_MAT4);

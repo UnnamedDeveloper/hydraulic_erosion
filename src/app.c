@@ -36,7 +36,7 @@ static void init_resources(app_state_t *state)
 
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
-		.size = { 150, 150 },
+		.size = { 2000, 2000 },
 		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
 	}, &state->terrain);
 }
@@ -86,7 +86,7 @@ void app_run(app_state_t *state)
 		});
 
 		camera_set_target(state->camera, state->terrain->position);
-		terrain_draw(state->camera, state->terrain);
+		terrain_draw(state->camera, (vec3) { 0.0f, 100.0f, 0.0f }, state->terrain);
 
 		window_swap_buffers(state->window);
 	}

@@ -37,7 +37,7 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain);
 terrain_t *terrain_create(const terrain_desc_t *desc);
 void terrain_free(terrain_t *terrain);
 
-void terrain_draw(camera_t *camera, terrain_t *terrain);
+void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain);
 
 void terrain_resize(terrain_t *terrain, uvec2 size);
 
