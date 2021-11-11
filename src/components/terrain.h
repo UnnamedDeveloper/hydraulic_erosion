@@ -23,6 +23,7 @@ typedef struct terrain_t
 {
 	vec3 position;
 	uvec2 size;
+	float *height_map;
 
 	terrain_noise_function_t noise_function;
 

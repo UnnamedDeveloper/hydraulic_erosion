@@ -36,6 +36,24 @@ static shader_t *create_shader(const char *path, shader_type_t type)
 	return shader;
 }
 
+static float get_terrain_height(terrain_t *terrain, uint32_t x, uint32_t y)
+{
+	HE_ASSERT(terrain != NULL, "Cannot get height of NULL");
+	HE_ASSERT(x < terrain->size.w, "X coord outside terrain bounds");
+	HE_ASSERT(y < terrain->size.h, "X coord outside terrain bounds");
+
+	return terrain->height_map[x + y * terrain->size.w];
+}
+
+static void set_terrain_height(terrain_t *terrain, uint32_t x, uint32_t y, float v)
+{
+	HE_ASSERT(terrain != NULL, "Cannot set height of NULL");
+	HE_ASSERT(x < terrain->size.w, "X coord outside terrain bounds");
+	HE_ASSERT(y < terrain->size.h, "X coord outside terrain bounds");
+
+	terrain->height_map[x + y * terrain->size.w] = v;
+}
+
 static void terrain_init_pipeline(terrain_t *terrain)
 {
 	shader_t *vs = create_shader("res/shaders/terrain.vs.glsl", SHADER_TYPE_VERTEX);
@@ -80,6 +98,98 @@ static void terrain_init_mesh(terrain_t *terrain)
 	mesh_init(&(mesh_desc_t){
 		.dynamic = true,
 	}, &terrain->mesh);
+}
+
+static void update_mesh(terrain_t *terrain)
+{
+	size_t vertex_count = terrain->size.w * terrain->size.h;
+	terrain_vertex_t *vertices = calloc(vertex_count, sizeof(terrain_vertex_t));
+
+	size_t index_count = (terrain->size.w - 1) * (terrain->size.h - 1) * 6;
+	int *indices = calloc(index_count, sizeof(int));
+
+	// thanks brackeys
+	int i = 0;
+	for (int z = 0; z < terrain->size.h; z++)
+	{
+		for (int x = 0; x < terrain->size.w; x++)
+		{
+			vertices[i].position[0] = (float)x - (terrain->size.w / 2.0f);
+			vertices[i].position[1] = get_terrain_height(terrain, x, z);
+			vertices[i].position[2] = (float)z - (terrain->size.h / 2.0f);
+			
+			glm_vec3_copy(GLM_VEC3_ZERO, vertices[i].normal);
+
+			i++;
+		}
+	}
+
+	int vertex = 0;
+	int index = 0;
+	for (int z = 0; z < terrain->size.h - 1; z++)
+	{
+		for (int x = 0; x < terrain->size.w - 1; x++)
+		{
+			vec3 p, ba, ca;
+			int a, b, c;
+
+			// -- tri 1
+			// indices
+			a = vertex;
+			b = vertex + (terrain->size.w - 1) + 1;
+			c = vertex + 1;
+			indices[index + 0] = a;
+			indices[index + 1] = b;
+			indices[index + 2] = c;
+
+			// normals
+			glm_vec3_sub(vertices[b].position, vertices[a].position, ba);
+			glm_vec3_sub(vertices[c].position, vertices[a].position, ca);
+			glm_vec3_cross(ba, ca, p);
+
+			glm_vec3_add(vertices[a].normal, p, vertices[a].normal);
+			glm_vec3_add(vertices[b].normal, p, vertices[b].normal);
+			glm_vec3_add(vertices[c].normal, p, vertices[c].normal);
+
+			// -- tri 2
+			// indices
+			a = vertex + 1;
+			b = vertex + (terrain->size.w - 1) + 1;
+			c = vertex + (terrain->size.w - 1) + 2;
+			indices[index + 3] = a;
+			indices[index + 4] = b;
+			indices[index + 5] = c;
+
+			// normals
+			glm_vec3_sub(vertices[b].position, vertices[a].position, ba);
+			glm_vec3_sub(vertices[c].position, vertices[a].position, ca);
+			glm_vec3_cross(ba, ca, p);
+
+			glm_vec3_add(vertices[a].normal, p, vertices[a].normal);
+			glm_vec3_add(vertices[b].normal, p, vertices[b].normal);
+			glm_vec3_add(vertices[c].normal, p, vertices[c].normal);
+
+			vertex++;
+			index += 6;
+		}
+		vertex++;
+	}
+
+	for (int i = 0; i < vertex_count; i++)
+	{
+		glm_vec3_normalize(vertices[i].normal);
+	}
+
+	mesh_set_data(terrain->mesh, &(mesh_desc_t){
+		.vertices = vertices,
+		.vertices_size = vertex_count * sizeof(terrain_vertex_t),
+		.indices = indices,
+		.indices_size = index_count * sizeof(int),
+		.index_count = index_count,
+	});
+
+	free(vertices);
+	free(indices);
 }
 
 void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
@@ -165,92 +275,18 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 	HE_ASSERT(terrain != NULL, "Cannot resize NULL");
 	HE_ASSERT(size.w > 0 || size.h > 0, "Invalid terrain size");
 
-	size_t vertex_count = size.w * size.h;
-	terrain_vertex_t *vertices = calloc(vertex_count, sizeof(terrain_vertex_t));
+	terrain->size = size;
 
-	size_t index_count = (size.w - 1) * (size.h - 1) * 6;
-	int *indices = calloc(index_count, sizeof(int));
+	if (terrain->height_map != NULL) free(terrain->height_map);
+	terrain->height_map = calloc(size.w * size.h, sizeof(float));
 
-	// thanks brackeys
-	int i = 0;
-	for (int z = 0; z < size.h; z++)
+	for (int x = 0; x < terrain->size.w; x++)
 	{
-		for (int x = 0; x < size.w; x++)
+		for (int z = 0; z < terrain->size.h; z++)
 		{
-			vertices[i].position[0] = (float)x - (size.w / 2.0f);
-			vertices[i].position[1] = terrain->noise_function(x, z);
-			vertices[i].position[2] = (float)z - (size.h / 2.0f);
-			
-			glm_vec3_copy(GLM_VEC3_ZERO, vertices[i].normal);
-
-			i++;
+			set_terrain_height(terrain, x, z, terrain->noise_function(x, z));
 		}
 	}
 
-	int vertex = 0;
-	int index = 0;
-	for (int z = 0; z < size.h - 1; z++)
-	{
-		for (int x = 0; x < size.w - 1; x++)
-		{
-			vec3 p, ba, ca;
-			int a, b, c;
-
-			// -- tri 1
-			// indices
-			a = vertex;
-			b = vertex + (size.w - 1) + 1;
-			c = vertex + 1;
-			indices[index + 0] = a;
-			indices[index + 1] = b;
-			indices[index + 2] = c;
-
-			// normals
-			glm_vec3_sub(vertices[b].position, vertices[a].position, ba);
-			glm_vec3_sub(vertices[c].position, vertices[a].position, ca);
-			glm_vec3_cross(ba, ca, p);
-
-			glm_vec3_add(vertices[a].normal, p, vertices[a].normal);
-			glm_vec3_add(vertices[b].normal, p, vertices[b].normal);
-			glm_vec3_add(vertices[c].normal, p, vertices[c].normal);
-
-			// -- tri 2
-			// indices
-			a = vertex + 1;
-			b = vertex + (size.w - 1) + 1;
-			c = vertex + (size.w - 1) + 2;
-			indices[index + 3] = a;
-			indices[index + 4] = b;
-			indices[index + 5] = c;
-
-			// normals
-			glm_vec3_sub(vertices[b].position, vertices[a].position, ba);
-			glm_vec3_sub(vertices[c].position, vertices[a].position, ca);
-			glm_vec3_cross(ba, ca, p);
-
-			glm_vec3_add(vertices[a].normal, p, vertices[a].normal);
-			glm_vec3_add(vertices[b].normal, p, vertices[b].normal);
-			glm_vec3_add(vertices[c].normal, p, vertices[c].normal);
-
-			vertex++;
-			index += 6;
-		}
-		vertex++;
-	}
-
-	for (int i = 0; i < vertex_count; i++)
-	{
-		glm_vec3_normalize(vertices[i].normal);
-	}
-
-	mesh_set_data(terrain->mesh, &(mesh_desc_t){
-		.vertices = vertices,
-		.vertices_size = vertex_count * sizeof(terrain_vertex_t),
-		.indices = indices,
-		.indices_size = index_count * sizeof(int),
-		.index_count = index_count,
-	});
-
-	free(vertices);
-	free(indices);
+	update_mesh(terrain);
 }
