@@ -33,7 +33,7 @@ static void init_resources(app_state_t *state)
 		.fov = 70.0f,
 		.sensitivity = 0.25f,
 		.angle = { 0.0f, 45.0f, },
-		.distance = -50.0f,
+		.distance = -150.0f,
 		.window = state->window,
 	}, &state->camera);
 
