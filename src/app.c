@@ -9,6 +9,7 @@
 #include "gfx/context.h"
 #include "gfx/renderer.h"
 #include "math/noise.h"
+#include "erosion.h"
 
 static void on_window_close(event_bus_t *bus, void *user_pointer, window_close_event_t *event)
 {
@@ -41,6 +42,7 @@ static void init_resources(app_state_t *state)
 		.position = { 0.0f, 0.0f, 0.0f },
 		.size = { 200, 200 },
 		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
+		.erosion_function = (terrain_erosion_function_t)hydraulic_erosion,
 	}, &state->terrain);
 }
 
@@ -80,8 +82,16 @@ bool app_init(app_state_t *state)
 
 void app_run(app_state_t *state)
 {
+	int frame_step_count = 100;
 	while (state->running && window_process_events(state->window))
 	{
+		// update
+		for (int i = 0; i < frame_step_count; i++)
+		{
+			terrain_simulation_step(state->terrain);
+		}
+		terrain_update_mesh(state->terrain);
+
 		// render
 		renderer_clear(&(cmd_clear_desc_t){
 			.color = { 1.0f, 1.0f, 1.0f, 1.0f },

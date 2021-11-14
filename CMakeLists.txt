@@ -7,7 +7,7 @@ add_subdirectory("deps/glfw")
 
 set(PROJECT_SOURCES
 	"src/main.c"
-	"src/app.h" "src/app.c"
+	"src/app.h" "src/app.c" "src/erosion.h" "src/erosion.c"
 	"src/components/camera.h" "src/components/camera.c" "src/components/terrain.h" "src/components/terrain.c"
 	"src/debug/assert.h" "src/debug/assert.c"
 	"src/events/event.h" "src/events/event.c" "src/events/key_event.h" "src/events/key_event.c" "src/events/mouse_event.h" "src/events/mouse_event.c" "src/events/window_event.h" "src/events/window_event.c"

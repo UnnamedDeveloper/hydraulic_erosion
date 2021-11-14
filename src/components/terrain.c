@@ -36,24 +36,6 @@ static shader_t *create_shader(const char *path, shader_type_t type)
 	return shader;
 }
 
-static float get_terrain_height(terrain_t *terrain, uint32_t x, uint32_t y)
-{
-	HE_ASSERT(terrain != NULL, "Cannot get height of NULL");
-	HE_ASSERT(x < terrain->size.w, "X coord outside terrain bounds");
-	HE_ASSERT(y < terrain->size.h, "X coord outside terrain bounds");
-
-	return terrain->height_map[x + y * terrain->size.w];
-}
-
-static void set_terrain_height(terrain_t *terrain, uint32_t x, uint32_t y, float v)
-{
-	HE_ASSERT(terrain != NULL, "Cannot set height of NULL");
-	HE_ASSERT(x < terrain->size.w, "X coord outside terrain bounds");
-	HE_ASSERT(y < terrain->size.h, "X coord outside terrain bounds");
-
-	terrain->height_map[x + y * terrain->size.w] = v;
-}
-
 static void terrain_init_pipeline(terrain_t *terrain)
 {
 	shader_t *vs = create_shader("res/shaders/terrain.vs.glsl", SHADER_TYPE_VERTEX);
@@ -100,7 +82,92 @@ static void terrain_init_mesh(terrain_t *terrain)
 	}, &terrain->mesh);
 }
 
-static void update_mesh(terrain_t *terrain)
+void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
+{
+	HE_ASSERT(terrain != NULL, "Cannot initialize NULL");
+	HE_ASSERT(desc != NULL, "A terrain description is required");
+	HE_ASSERT(desc->noise_function != NULL, "A terrain noise function is required");
+	HE_ASSERT(desc->erosion_function != NULL, "A terrain erosion function is required");
+
+	terrain_t *result = calloc(1, sizeof(terrain_t));
+
+	result->noise_function = desc->noise_function;
+	result->erosion_function = desc->erosion_function;
+
+	terrain_init_pipeline(result);
+	terrain_init_mesh(result);
+
+	terrain_resize(result, desc->size);
+
+	glm_vec3_copy(desc->position, result->position);
+
+	*terrain = result;
+}
+
+terrain_t *terrain_create(const terrain_desc_t *desc)
+{
+	terrain_t *terrain;
+	terrain_init(desc, &terrain);
+	return terrain;
+}
+
+void terrain_free(terrain_t *terrain)
+{
+	if (terrain == NULL) return;
+
+	mesh_free(terrain->mesh);
+	pipeline_free(terrain->pipeline);
+#ifndef NDEBUG
+	pipeline_free(terrain->pipeline_wireframe);
+#endif
+	free(terrain);
+}
+
+void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain)
+{
+	HE_ASSERT(terrain != NULL, "Cannot draw NULL terrain");
+	HE_ASSERT(light_pos != NULL, "Cannot draw terrain without a light");
+	HE_ASSERT(camera != NULL, "Cannot draw terrain without a camera");
+
+	// calculate the cordinate system
+	mat4 model = GLM_MAT4_IDENTITY_INIT;
+	glm_translate(model, terrain->position);
+
+	mat4 view  = GLM_MAT4_IDENTITY_INIT;
+	camera_create_view_matrix(camera, view);
+
+	// draw the terrain
+	pipeline_t *last_pip = pipeline_bind(terrain->pipeline);
+
+	pipeline_set_uniform_mat4(terrain->pipeline, 0, model);
+	pipeline_set_uniform_mat4(terrain->pipeline, 1, view);
+	pipeline_set_uniform_mat4(terrain->pipeline, 2, camera->projection);
+	pipeline_set_uniformf3(terrain->pipeline, 3, light_pos);
+	pipeline_set_uniformf3(terrain->pipeline, 4, camera->position);
+
+	mesh_draw(terrain->mesh);
+
+	// draw wireframe
+#ifndef NDEBUG
+	pipeline_bind(terrain->pipeline_wireframe);
+
+	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 0, model);
+	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 1, view);
+	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 2, camera->projection);
+
+	mesh_draw(terrain->mesh);
+#endif
+
+	// restore previous state
+	pipeline_bind(last_pip);
+}
+
+void terrain_simulation_step(terrain_t *terrain)
+{
+	terrain->erosion_function(terrain);
+}
+
+void terrain_update_mesh(terrain_t *terrain)
 {
 	size_t vertex_count = terrain->size.w * terrain->size.h;
 	terrain_vertex_t *vertices = calloc(vertex_count, sizeof(terrain_vertex_t));
@@ -115,7 +182,7 @@ static void update_mesh(terrain_t *terrain)
 		for (int x = 0; x < terrain->size.w; x++)
 		{
 			vertices[i].position[0] = (float)x - (terrain->size.w / 2.0f);
-			vertices[i].position[1] = get_terrain_height(terrain, x, z);
+			vertices[i].position[1] = terrain_get_height(terrain, x, z);
 			vertices[i].position[2] = (float)z - (terrain->size.h / 2.0f);
 			
 			glm_vec3_copy(GLM_VEC3_ZERO, vertices[i].normal);
@@ -192,82 +259,22 @@ static void update_mesh(terrain_t *terrain)
 	free(indices);
 }
 
-void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
+float terrain_get_height(terrain_t *terrain, uint32_t x, uint32_t y)
 {
-	HE_ASSERT(terrain != NULL, "Cannot initialize NULL");
-	HE_ASSERT(desc != NULL, "A terrain description is required");
-	HE_ASSERT(desc->noise_function != NULL, "A terrain noise function is required");
+	HE_ASSERT(terrain != NULL, "Cannot get height of NULL");
+	HE_ASSERT(x < terrain->size.w, "X coord outside terrain bounds");
+	HE_ASSERT(y < terrain->size.h, "X coord outside terrain bounds");
 
-	terrain_t *result = calloc(1, sizeof(terrain_t));
-
-	result->noise_function = desc->noise_function;
-
-	terrain_init_pipeline(result);
-	terrain_init_mesh(result);
-
-	terrain_resize(result, desc->size);
-
-	glm_vec3_copy(desc->position, result->position);
-
-	*terrain = result;
+	return terrain->height_map[x + y * terrain->size.w];
 }
 
-terrain_t *terrain_create(const terrain_desc_t *desc)
+void terrain_set_height(terrain_t *terrain, uint32_t x, uint32_t y, float v)
 {
-	terrain_t *terrain;
-	terrain_init(desc, &terrain);
-	return terrain;
-}
+	HE_ASSERT(terrain != NULL, "Cannot set height of NULL");
+	HE_ASSERT(x < terrain->size.w, "X coord outside terrain bounds");
+	HE_ASSERT(y < terrain->size.h, "X coord outside terrain bounds");
 
-void terrain_free(terrain_t *terrain)
-{
-	if (terrain == NULL) return;
-
-	mesh_free(terrain->mesh);
-	pipeline_free(terrain->pipeline);
-#ifndef NDEBUG
-	pipeline_free(terrain->pipeline_wireframe);
-#endif
-	free(terrain);
-}
-
-void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain)
-{
-	HE_ASSERT(terrain != NULL, "Cannot draw NULL terrain");
-	HE_ASSERT(light_pos != NULL, "Cannot draw terrain without a light");
-	HE_ASSERT(camera != NULL, "Cannot draw terrain without a camera");
-
-	// calculate the cordinate system
-	mat4 model = GLM_MAT4_IDENTITY_INIT;
-	glm_translate(model, terrain->position);
-
-	mat4 view  = GLM_MAT4_IDENTITY_INIT;
-	camera_create_view_matrix(camera, view);
-
-	// draw the terrain
-	pipeline_t *last_pip = pipeline_bind(terrain->pipeline);
-
-	pipeline_set_uniform_mat4(terrain->pipeline, 0, model);
-	pipeline_set_uniform_mat4(terrain->pipeline, 1, view);
-	pipeline_set_uniform_mat4(terrain->pipeline, 2, camera->projection);
-	pipeline_set_uniformf3(terrain->pipeline, 3, light_pos);
-	pipeline_set_uniformf3(terrain->pipeline, 4, camera->position);
-
-	mesh_draw(terrain->mesh);
-
-	// draw wireframe
-#ifndef NDEBUG
-	pipeline_bind(terrain->pipeline_wireframe);
-
-	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 0, model);
-	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 1, view);
-	pipeline_set_uniform_mat4(terrain->pipeline_wireframe, 2, camera->projection);
-
-	mesh_draw(terrain->mesh);
-#endif
-
-	// restore previous state
-	pipeline_bind(last_pip);
+	terrain->height_map[x + y * terrain->size.w] = v;
 }
 
 void terrain_resize(terrain_t *terrain, uvec2 size)
@@ -284,9 +291,14 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 	{
 		for (int z = 0; z < terrain->size.h; z++)
 		{
-			set_terrain_height(terrain, x, z, terrain->noise_function(x, z));
+			terrain_set_height(terrain, x, z, terrain->noise_function(x, z));
 		}
 	}
 
-	update_mesh(terrain);
+	terrain_update_mesh(terrain);
+}
+
+uvec2 terrain_get_size(terrain_t *terrain)
+{
+	return terrain->size;
 }
