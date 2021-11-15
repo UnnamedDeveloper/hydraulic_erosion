@@ -52,7 +52,7 @@ uint32_t event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer
 			id = i;
 	}
 
-	assert(id != EVENT_MAX_CALLBACKS__, "Event bus callbacks exhausted");
+	HE_ASSERT(id != EVENT_MAX_CALLBACKS__, "Event bus callbacks exhausted");
 
 	bus->user_pointers[type][id] = user_pointer;
 	bus->callbacks[type][id] = callback;
