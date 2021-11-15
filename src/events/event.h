@@ -33,7 +33,6 @@ typedef struct event_bus_t
 {
 	void *user_pointers[EVENT_TYPE_COUNT__][EVENT_MAX_CALLBACKS__];
 	event_callback_fn_t callbacks[EVENT_TYPE_COUNT__][EVENT_MAX_CALLBACKS__];
-	uint32_t callback_indices[EVENT_TYPE_COUNT__];
 } event_bus_t;
 
 void event_bus_init(const event_bus_desc_t *desc, event_bus_t **event_bus);
