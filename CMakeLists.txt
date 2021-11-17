@@ -27,7 +27,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	C_EXTENSIONS OFF
 	FOLDER "${PROJECT_NAME}")
 
-if (WIN32)
+if (WIN32 AND MSVC)
 	# the default visual studio stack size failed me
 	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/STACK:10000000")
 endif()
