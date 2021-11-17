@@ -31,6 +31,12 @@ typedef struct camera_t
 	bool move;
 	bool rotate;
 
+	uint32_t resize_cb_id;
+	uint32_t move_cb_id;
+	uint32_t scroll_cb_id;
+	uint32_t press_cb_id;
+	uint32_t release_cb_id;
+
 	window_t *window;
 
 } camera_t;

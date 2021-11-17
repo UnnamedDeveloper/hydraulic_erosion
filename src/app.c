@@ -49,6 +49,7 @@ static void init_resources(app_state_t *state)
 static void free_resources(app_state_t *state)
 {
 	terrain_free(state->terrain);
+	camera_free(state->camera);
 }
 
 bool app_init(app_state_t *state)

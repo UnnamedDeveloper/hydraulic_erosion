@@ -104,11 +104,11 @@ void camera_init(const camera_desc_t *desc, camera_t **camera)
 	camera_update_projection(result);
 	update_camera_position(result);
 
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, result, (event_callback_fn_t)on_window_resize);
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    result, (event_callback_fn_t)on_mouse_move);
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  result, (event_callback_fn_t)on_mouse_scroll);
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   result, (event_callback_fn_t)on_mouse_press);
-	event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, result, (event_callback_fn_t)on_mouse_release);
+	result->resize_cb_id  = event_subscribe(desc->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, result, (event_callback_fn_t)on_window_resize);
+	result->move_cb_id    = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    result, (event_callback_fn_t)on_mouse_move);
+	result->scroll_cb_id  = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  result, (event_callback_fn_t)on_mouse_scroll);
+	result->press_cb_id   = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   result, (event_callback_fn_t)on_mouse_press);
+	result->release_cb_id = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, result, (event_callback_fn_t)on_mouse_release);
 
 	*camera = result;
 }
@@ -122,6 +122,15 @@ camera_t *camera_create(const camera_desc_t *desc)
 
 void camera_free(camera_t *camera)
 {
+	if (camera == NULL) return;
+
+	// unsubscribe from events
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, camera->resize_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    camera->move_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  camera->scroll_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   camera->press_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, camera->release_cb_id);
+
 	free(camera);
 }
 
