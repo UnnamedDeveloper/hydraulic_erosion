@@ -41,12 +41,12 @@ static float noise_2d(float x, float y)
     return smooth_interpolate(low, high, sy);
 }
 
-float perlin_noise_2d(uint32_t x, uint32_t y)
+float perlin_noise_2d(float x, float y)
 {
-    float fx = (float)x / 10.0f;
-    float fy = (float)y / 10.0f;
+    float fx = (float)x / 10.0f + 500;
+    float fy = (float)y / 10.0f + 500;
 
-    float frequency = 0.1f;
+    float frequency = 0.2f;
     float amplitude = 4.0f;
     int octaves = 8;
 
