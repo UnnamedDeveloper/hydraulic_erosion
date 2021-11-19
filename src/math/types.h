@@ -14,4 +14,15 @@ typedef struct uvec2
 	};
 } uvec2;
 
+typedef struct ivec2
+{
+	union
+	{
+		int size[2];
+		struct { int width, height; };
+		struct { int w, h; };
+		struct { int x, y; };
+	};
+} ivec2;
+
 #endif /* __math_types_h__ */
