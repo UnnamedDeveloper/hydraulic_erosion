@@ -94,6 +94,7 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 	result->noise_function = desc->noise_function;
 	result->erosion_function = desc->erosion_function;
 	result->scale_scalar = desc->scale_scalar;
+	result->elevation = desc->elevation;
 
 	terrain_init_pipeline(result);
 	terrain_init_mesh(result);
@@ -185,7 +186,7 @@ void terrain_update_mesh(terrain_t *terrain)
 			float vx = ((float) x - (terrain->size.w / 2.0f)) * terrain->scale_scalar;
 			float vz = ((float) z - (terrain->size.h / 2.0f)) * terrain->scale_scalar;
 			vertices[i].position[0] = vx;
-			vertices[i].position[1] = terrain_get_height(terrain, x, z);
+			vertices[i].position[1] = terrain_get_height(terrain, x, z) * terrain->elevation;
 			vertices[i].position[2] = vz;
 			
 			glm_vec3_copy(GLM_VEC3_ZERO, vertices[i].normal);

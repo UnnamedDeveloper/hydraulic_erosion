@@ -19,6 +19,7 @@ typedef struct terrain_desc_t
 	vec3 position;
 	uvec2 size;
 	float scale_scalar;
+	float elevation;
 	terrain_noise_function_t noise_function;
 	terrain_erosion_function_t erosion_function;
 } terrain_desc_t;
@@ -29,6 +30,7 @@ typedef struct terrain_t
 	uvec2 size;
 	float *height_map;
 	float scale_scalar;
+	float elevation;
 
 	terrain_noise_function_t noise_function;
 	terrain_erosion_function_t erosion_function;
