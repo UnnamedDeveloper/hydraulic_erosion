@@ -92,6 +92,7 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 	terrain_t *result = calloc(1, sizeof(terrain_t));
 
 	result->noise_function = desc->noise_function;
+	result->seed = desc->seed;
 	result->erosion_function = desc->erosion_function;
 	result->scale_scalar = desc->scale_scalar;
 	result->elevation = desc->elevation;
@@ -295,7 +296,7 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 	{
 		for (int z = 0; z < terrain->size.h; z++)
 		{
-			terrain_set_height(terrain, x, z, terrain->noise_function((float) x * terrain->scale_scalar, (float) z * terrain->scale_scalar));
+			terrain_set_height(terrain, x, z, terrain->noise_function(terrain->seed, (float) x * terrain->scale_scalar, (float) z * terrain->scale_scalar));
 		}
 	}
 

@@ -15,16 +15,13 @@ static float smooth_interpolate(float a, float b, float w)
     return interpolate(a, b, w * w * (3.0f - 2.0f * w));
 }
 
-static float random_2d(int x, int y)
+static float random_2d(int seed, int x, int y)
 {
-    srand(x * 62834 + y * 733);
+    srand(x * 62834 + y * 733 + seed * 7521);
     return (float) rand() / (float) RAND_MAX;
-    //int h = x * 374761393 + y * 668265263;
-    //h = (h ^ (h >> 13)) * 1274126177;
-    //return h ^ (h >> 16);
 }
 
-static float noise_2d(float x, float y)
+static float noise_2d(int seed, float x, float y)
 {
     int ix = (int)x;
     int iy = (int)y;
@@ -32,10 +29,10 @@ static float noise_2d(float x, float y)
     float sx = x - ix;
     float sy = y - iy;
 
-    float s = random_2d(ix,     iy    );
-    float t = random_2d(ix + 1, iy    );
-    float u = random_2d(ix,     iy + 1);
-    float v = random_2d(ix + 1, iy + 1);
+    float s = random_2d(seed, ix,     iy    );
+    float t = random_2d(seed, ix + 1, iy    );
+    float u = random_2d(seed, ix,     iy + 1);
+    float v = random_2d(seed, ix + 1, iy + 1);
 
     float low  = smooth_interpolate(s, t, sx);
     float high = smooth_interpolate(u, v, sx);
@@ -43,7 +40,7 @@ static float noise_2d(float x, float y)
     return smooth_interpolate(low, high, sy);
 }
 
-float perlin_noise_2d(float x, float y)
+float perlin_noise_2d(int seed, float x, float y)
 {
     float fx = (float)x / 10.0f + 500;
     float fy = (float)y / 10.0f + 500;
@@ -61,7 +58,7 @@ float perlin_noise_2d(float x, float y)
     for (int i = 0; i < octaves; i++)
     {
         div += 1 * amplitude;
-        total += noise_2d(ax, ay) * amplitude;
+        total += noise_2d(seed, ax, ay) * amplitude;
 
         amplitude /= 2;
         ax *= 2;

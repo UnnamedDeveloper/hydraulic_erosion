@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include <string.h>
+#include <time.h>
 
 #include <stb_image.h>
 
@@ -43,6 +44,7 @@ static void init_resources(app_state_t *state)
 		.size = { 200, 200 },
 		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
 		.erosion_function = (terrain_erosion_function_t)hydraulic_erosion,
+		.seed = time(0),
 		.scale_scalar = 1.0f,
 		.elevation = 100.0f,
 	}, &state->terrain);

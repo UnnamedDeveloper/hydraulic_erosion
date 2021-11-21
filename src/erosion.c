@@ -34,5 +34,5 @@ void hydraulic_erosion(terrain_t *terrain)
 
 	// dig into current position
 	float height = terrain_get_height(terrain, drop.pos[0], drop.pos[1]);
-	terrain_set_height(terrain, drop.pos[0], drop.pos[1], height - 1.0f);
+	terrain_set_height(terrain, drop.pos[0], drop.pos[1], height - 0.001f);
 }

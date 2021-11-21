@@ -10,7 +10,7 @@
 #include "math/types.h"
 #include "camera.h"
 
-typedef float(*terrain_noise_function_t)(float, float);
+typedef float(*terrain_noise_function_t)(int, float, float);
 typedef struct terrain_t terrain_t;
 typedef void(*terrain_erosion_function_t)(terrain_t *);
 
@@ -18,6 +18,7 @@ typedef struct terrain_desc_t
 {
 	vec3 position;
 	uvec2 size;
+	int seed;
 	float scale_scalar;
 	float elevation;
 	terrain_noise_function_t noise_function;
@@ -28,6 +29,8 @@ typedef struct terrain_t
 {
 	vec3 position;
 	uvec2 size;
+
+	int seed;
 	float *height_map;
 	float scale_scalar;
 	float elevation;
