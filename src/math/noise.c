@@ -17,7 +17,7 @@ static float smooth_interpolate(float a, float b, float w)
 
 static float random_2d(int seed, int x, int y)
 {
-    srand(x * 62834 + y * 733 + seed * 7521);
+    srand(x * 62834 + y * 5733 + seed * 7521);
     return (float) rand() / (float) RAND_MAX;
 }
 

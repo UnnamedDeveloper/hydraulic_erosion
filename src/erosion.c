@@ -21,13 +21,13 @@ typedef struct drop_t
 static float rand_x_position_on_terrain(terrain_t *terrain)
 {
 	float random = ((float) rand() / (float) RAND_MAX);
-	return random * (terrain_get_size(terrain).w - 1);
+	return random * (terrain_get_size(terrain).w - 1.1f);
 }
 
 static float rand_y_position_on_terrain(terrain_t *terrain)
 {
 	float random = ((float) rand() / (float) RAND_MAX);
-	return random * (terrain_get_size(terrain).h - 1);
+	return random * (terrain_get_size(terrain).h - 1.1f);
 }
 
 static float height_at(terrain_t *t, int x, int y)

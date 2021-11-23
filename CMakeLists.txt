@@ -38,7 +38,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/
 target_link_libraries(${PROJECT_NAME} PRIVATE cglm)
 target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+if (NOT MSVC)
 target_link_libraries(${PROJECT_NAME} PRIVATE m)
+endif()
 
 set(PROJECT_RESOURCES
 	"res/shaders/terrain.vs.glsl" "res/shaders/terrain.fs.glsl" "res/shaders/terrain_wireframe.fs.glsl")
