@@ -116,15 +116,6 @@ void app_run(app_state_t *state)
 			run_simulation(state->terrain, steps);
 			run_iterations += steps;
 		}
-		else
-		{
-			static bool told = false;
-			if (!told)
-			{
-				told = true;
-				printf("Complete! %i steps run\n", run_iterations);
-			}
-		}
 		
 		// render
 		renderer_clear(&(cmd_clear_desc_t){
