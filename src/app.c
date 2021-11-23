@@ -43,7 +43,6 @@ static void init_resources(app_state_t *state)
 		.position = { 0.0f, 0.0f, 0.0f },
 		.size = { 200, 200 },
 		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
-		.erosion_function = (terrain_erosion_function_t)hydraulic_erosion,
 		.seed = time(0),
 		.scale_scalar = 1.0f,
 		.elevation = 100.0f,
@@ -93,7 +92,7 @@ void app_run(app_state_t *state)
 		// update
 		for (int i = 0; i < frame_step_count; i++)
 		{
-			terrain_simulation_step(state->terrain);
+			hydraulic_erosion(state->terrain);
 		}
 		terrain_update_mesh(state->terrain);
 		

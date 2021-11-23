@@ -87,13 +87,12 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 	HE_ASSERT(terrain != NULL, "Cannot initialize NULL");
 	HE_ASSERT(desc != NULL, "A terrain description is required");
 	HE_ASSERT(desc->noise_function != NULL, "A terrain noise function is required");
-	HE_ASSERT(desc->erosion_function != NULL, "A terrain erosion function is required");
+	HE_ASSERT(desc->elevation != 0, "Elevation of zero will flatten terrain");
 
 	terrain_t *result = calloc(1, sizeof(terrain_t));
 
 	result->noise_function = desc->noise_function;
 	result->seed = desc->seed;
-	result->erosion_function = desc->erosion_function;
 	result->scale_scalar = desc->scale_scalar;
 	result->elevation = desc->elevation;
 
@@ -163,11 +162,6 @@ void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain)
 
 	// restore previous state
 	pipeline_bind(last_pip);
-}
-
-void terrain_simulation_step(terrain_t *terrain)
-{
-	terrain->erosion_function(terrain);
 }
 
 void terrain_update_mesh(terrain_t *terrain)
