@@ -41,10 +41,10 @@ static void init_resources(app_state_t *state)
 
 	terrain_init(&(terrain_desc_t){
 		.position = { 0.0f, 0.0f, 0.0f },
-		.size = { 200, 200 },
+		.size = { 500, 500 },
 		.noise_function = (terrain_noise_function_t)perlin_noise_2d,
 		.seed = time(0),
-		.scale_scalar = 1.0f,
+		.scale_scalar = 0.4f,
 		.elevation = 100.0f,
 	}, &state->terrain);
 }
@@ -86,7 +86,7 @@ bool app_init(app_state_t *state)
 
 void app_run(app_state_t *state)
 {
-	int frame_step_count = 100;
+	int frame_step_count = 500;
 	while (state->running && window_process_events(state->window))
 	{
 		// update
