@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #include <stb_image.h>
 
@@ -55,6 +56,15 @@ static void free_resources(app_state_t *state)
 	camera_free(state->camera);
 }
 
+static void run_simulation(terrain_t *t, int iterations)
+{
+	for (int i = 0; i < iterations; i++)
+	{
+		hydraulic_erosion(t);
+	}
+	terrain_update_mesh(t);
+}
+
 bool app_init(app_state_t *state)
 {
 	memset(state, 0, sizeof(state));
@@ -86,15 +96,35 @@ bool app_init(app_state_t *state)
 
 void app_run(app_state_t *state)
 {
+	bool animate = true;
+
+	int total_iterations = 200000;
 	int frame_step_count = 500;
+
+	if (!animate)
+	{
+		run_simulation(state->terrain, total_iterations);
+	}
+
+	int run_iterations = 0;
 	while (state->running && window_process_events(state->window))
 	{
 		// update
-		for (int i = 0; i < frame_step_count; i++)
+		if (animate && total_iterations > run_iterations)
 		{
-			hydraulic_erosion(state->terrain);
+			int steps = fmin((total_iterations - run_iterations), frame_step_count);
+			run_simulation(state->terrain, steps);
+			run_iterations += steps;
 		}
-		terrain_update_mesh(state->terrain);
+		else
+		{
+			static bool told = false;
+			if (!told)
+			{
+				told = true;
+				printf("Complete! %i steps run\n", run_iterations);
+			}
+		}
 		
 		// render
 		renderer_clear(&(cmd_clear_desc_t){
