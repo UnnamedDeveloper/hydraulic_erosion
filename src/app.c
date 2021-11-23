@@ -87,7 +87,7 @@ bool app_init(app_state_t *state)
 
 void app_run(app_state_t *state)
 {
-	int frame_step_count = 1000;
+	int frame_step_count = 100;
 	while (state->running && window_process_events(state->window))
 	{
 		// update
