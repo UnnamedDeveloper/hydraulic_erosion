@@ -10,7 +10,7 @@ void mesh_init(const mesh_desc_t *desc, mesh_t **mesh)
 	HE_ASSERT(mesh != NULL, "Cannot initialize NULL");
 	HE_ASSERT(desc != NULL, "A mesh description is required");
 
-	mesh_t *result = calloc(1, sizeof(mesh_t));
+	mesh_t *result = malloc(sizeof(mesh_t));
 
 	result->dynamic = desc->dynamic;
 	result->vertex_count = desc->vertex_count;

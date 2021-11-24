@@ -70,7 +70,7 @@ void image_init(const image_desc_t *desc, image_t **image)
 	HE_ASSERT(desc != NULL, "An image description is required");
 	HE_ASSERT(IMAGE_TYPE_NONE < desc->type < IMAGE_TYPE_COUNT__, "Invalid image type");
 
-	image_t *result = calloc(1, sizeof(image_t));
+	image_t *result = malloc(sizeof(image_t));
 
 	glCreateTextures(get_gl_image_type(desc->type), 1, &result->id);
 	result->type = desc->type;

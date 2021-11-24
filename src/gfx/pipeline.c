@@ -84,7 +84,7 @@ bool shader_init(const shader_desc_t *desc, shader_t **shader)
 	HE_ASSERT(desc->source != NULL, "Shader source is required");
 	HE_ASSERT(0 <= desc->type < SHADER_TYPE_COUNT__, "Invalid shader typInvalid shader type");
 
-	shader_t *result = calloc(1, sizeof(shader_t));
+	shader_t *result = malloc(sizeof(shader_t));
 
 	result->id = glCreateShader(get_gl_shader_type(desc->type));
 	result->type = desc->type;
@@ -132,7 +132,7 @@ bool pipeline_init(const pipeline_desc_t *desc, pipeline_t **pipeline)
 	HE_ASSERT(desc->fs != NULL, "A fragment shader is required");
 	HE_ASSERT(desc->layout.location[0].type != ATTRIBUTE_TYPE_NONE, "Pipeline must have at least one attribute");
 
-	pipeline_t *result = calloc(1, sizeof(pipeline_t));
+	pipeline_t *result = malloc(sizeof(pipeline_t));
 
 	// create pipeline
 	result->id = glCreateProgram();

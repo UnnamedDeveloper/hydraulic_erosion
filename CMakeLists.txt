@@ -27,11 +27,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	C_EXTENSIONS OFF
 	FOLDER "${PROJECT_NAME}")
 
-if (WIN32 AND MSVC)
-	# the default visual studio stack size failed me
-	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/STACK:10000000")
-endif()
-
 target_include_directories(${PROJECT_NAME} PRIVATE "src")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/")
 

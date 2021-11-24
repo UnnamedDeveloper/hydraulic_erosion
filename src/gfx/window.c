@@ -107,7 +107,7 @@ void window_init(const window_desc_t *desc, window_t **window)
 	HE_ASSERT(desc->title != NULL, "A window title is required");
 	HE_ASSERT(desc->event_bus != NULL, "An event bus is required");
 
-	window_t *result = calloc(1, sizeof(window_t));
+	window_t *result = malloc(sizeof(window_t));
 
 	result->event_bus = desc->event_bus;
 

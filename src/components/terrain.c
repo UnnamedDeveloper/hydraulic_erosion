@@ -21,7 +21,7 @@ static shader_t *create_shader(const char *path, shader_type_t type)
 	HE_ASSERT(file != NULL, "Failed to open shader file");
 
 	file_read(file, &file_size, NULL);
-	char *source = calloc(1, file_size + 1);
+	char *source = malloc(file_size + 1);
 	file_read(file, &file_size, source);
 	source[file_size] = '\0';
 	file_close(file);
@@ -89,12 +89,13 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 	HE_ASSERT(desc->noise_function != NULL, "A terrain noise function is required");
 	HE_ASSERT(desc->elevation != 0, "Elevation of zero will flatten terrain");
 
-	terrain_t *result = calloc(1, sizeof(terrain_t));
+	terrain_t *result = malloc(sizeof(terrain_t));
 
 	result->noise_function = desc->noise_function;
 	result->seed = desc->seed;
 	result->scale_scalar = desc->scale_scalar;
 	result->elevation = desc->elevation;
+	result->height_map = NULL;
 
 	terrain_init_pipeline(result);
 	terrain_init_mesh(result);
@@ -122,6 +123,7 @@ void terrain_free(terrain_t *terrain)
 #ifndef NDEBUG
 	pipeline_free(terrain->pipeline_wireframe);
 #endif
+	free(terrain->height_map);
 	free(terrain);
 }
 
@@ -167,10 +169,10 @@ void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain)
 void terrain_update_mesh(terrain_t *terrain)
 {
 	size_t vertex_count = terrain->size.w * terrain->size.h;
-	terrain_vertex_t *vertices = calloc(vertex_count, sizeof(terrain_vertex_t));
+	terrain_vertex_t *vertices = malloc(vertex_count * sizeof(terrain_vertex_t));
 
 	size_t index_count = (terrain->size.w - 1) * (terrain->size.h - 1) * 6;
-	int *indices = calloc(index_count, sizeof(int));
+	int *indices = malloc(index_count * sizeof(int));
 
 	// thanks brackeys
 	int i = 0;
@@ -284,7 +286,7 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 	terrain->size = size;
 
 	if (terrain->height_map != NULL) free(terrain->height_map);
-	terrain->height_map = calloc(size.w * size.h, sizeof(float));
+	terrain->height_map = malloc(size.w * size.h * sizeof(float));
 
 	for (int x = 0; x < terrain->size.w; x++)
 	{

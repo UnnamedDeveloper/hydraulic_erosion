@@ -38,7 +38,7 @@ void buffer_init(const buffer_desc_t *desc, buffer_t **buffer)
 	HE_ASSERT(0 <= desc->type < BUFFER_TYPE_COUNT__, "Invalid buffer type");
 	HE_ASSERT(0 <= desc->usage < BUFFER_USAGE_COUNT__, "Invalid buffer usage");
 
-	buffer_t *result = calloc(1, sizeof(buffer_t));
+	buffer_t *result = malloc(sizeof(buffer_t));
 
 	glCreateBuffers(1, &result->id);
 	result->type = desc->type;

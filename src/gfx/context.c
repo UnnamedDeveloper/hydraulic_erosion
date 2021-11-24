@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -67,7 +68,8 @@ void context_init(const context_desc_t *desc, context_t **context)
 	HE_ASSERT(context != NULL, "Cannot initialize NULL");
 	HE_ASSERT(desc != NULL, "A context description is required");
 
-	context_t *result = calloc(1, sizeof(context_t));
+	context_t *result = malloc(sizeof(context_t));
+	if (result != NULL) memset(result, 0, sizeof(context_t));
 
 	result->window = desc->window;
 
