@@ -51,5 +51,5 @@ sh build_linux.sh <target>
 
 ## See also
 
-- [Hans Beyers paper on hydraulic erosion](Implementation of a method for hydraulic erosion.pdf)
+- [Hans Beyers paper on hydraulic erosion](Implementation%20of%20a%20method%20for%20hydraulic%20erosion.pdf)
 - [Sebastian Lague's video](https://www.youtube.com/watch?v=eaXk97ujbPQ)
