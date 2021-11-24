@@ -85,6 +85,11 @@ bool app_init(app_state_t *state)
 
 	context_bind(state->window->context);
 
+	// setup imgui
+	state->imgui = imgui_context_create(&(imgui_context_desc_t) {
+		.window = state->window,
+	});
+
 	// initialize the resources (duh...)
 	init_resources(state);
 
@@ -107,8 +112,14 @@ void app_run(app_state_t *state)
 	}
 
 	int run_iterations = 0;
+	float last_time = glfwGetTime() * 1000.0f;
 	while (state->running && window_process_events(state->window))
 	{
+		// calculate delta time
+		float current_time = glfwGetTime() * 1000.0f;
+		float delta = current_time - last_time;
+		last_time = current_time;
+		
 		// update
 		if (animate && total_iterations > run_iterations)
 		{
@@ -116,6 +127,13 @@ void app_run(app_state_t *state)
 			run_simulation(state->terrain, steps);
 			run_iterations += steps;
 		}
+
+		// draw ui
+		imgui_context_begin(state->imgui, delta);
+
+		igShowDemoWindow(NULL);
+
+		imgui_context_end(state->imgui);
 		
 		// render
 		renderer_clear(&(cmd_clear_desc_t){
@@ -125,6 +143,8 @@ void app_run(app_state_t *state)
 
 		terrain_draw(state->camera, (vec3) { 0.0f, 100.0f, 0.0f }, state->terrain);
 
+		imgui_context_render(state->imgui);
+
 		window_swap_buffers(state->window);
 	}
 }
@@ -132,6 +152,7 @@ void app_run(app_state_t *state)
 void app_shutdown(app_state_t *state)
 {
 	free_resources(state);
+	imgui_context_free(state->imgui);
 	window_free(state->window);
 	shutdown_libs();
 }
