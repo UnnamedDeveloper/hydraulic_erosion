@@ -4,6 +4,8 @@
 
 #include "debug/assert.h"
 
+static bool any_context_drawing = false;
+
 void imgui_context_init(const imgui_context_desc_t *desc, imgui_context_t **ctx)
 {
 	HE_ASSERT(ctx != NULL, "Cannot initialize NULL");
@@ -21,6 +23,9 @@ void imgui_context_init(const imgui_context_desc_t *desc, imgui_context_t **ctx)
 	unsigned char *text_pixels = NULL;
 	int text_w, text_h;
 	ImFontAtlas_GetTexDataAsRGBA32(result->io->Fonts, &text_pixels, &text_w, &text_h, NULL);
+
+	// set dark theme supreme
+	igStyleColorsDark(NULL);
 
 	*ctx = result;
 }
@@ -43,8 +48,12 @@ void imgui_context_free(imgui_context_t *ctx)
 void imgui_context_begin(imgui_context_t *ctx, float delta)
 {
 	HE_ASSERT(ctx != NULL, "Cannot begin drawing imgui on NULL");
+	HE_ASSERT(!any_context_drawing, "Cannot begin imgui drawing while another context is active drawing");
 
+	any_context_drawing = true;
 	ctx->drawing = true;
+
+	igSetCurrentContext(ctx->ctx);
 
 	uvec2 usize = window_get_size(ctx->window);
 	ctx->io->DisplaySize = (ImVec2){ .x = (int)usize.x, .y = (int)usize.y };
@@ -55,12 +64,17 @@ void imgui_context_begin(imgui_context_t *ctx, float delta)
 void imgui_context_end(imgui_context_t *ctx)
 {
 	HE_ASSERT(ctx != NULL, "Cannot end drawing imgui on NULL");
+
 	ctx->drawing = false;
+	any_context_drawing = false;
 }
 
 void imgui_context_render(imgui_context_t *ctx)
 {
 	HE_ASSERT(ctx != NULL, "Cannot render imgui from NULL");
+	HE_ASSERT(!ctx->drawing, "Cannot draw context while drawing");
+	HE_ASSERT(!any_context_drawing, "Cannot render imgui while another context is active drawing");
 
+	igSetCurrentContext(ctx->ctx);
 	igRender();
 }
