@@ -206,6 +206,16 @@ static void on_app_complete(app_state_t *state, float delta)
 	igEnd();
 }
 
+static void on_app_any(app_state_t *state, float delta)
+{
+	if (igBegin("Statistics", NULL, 0))
+	{
+		igText("Deltatime: %fms", delta);
+		igText("FPS: %f", (1000.0f / delta));
+	}
+	igEnd();
+}
+
 bool app_init(app_state_t *state)
 {
 	memset(state, 0, sizeof(state));
@@ -267,6 +277,7 @@ void app_run(app_state_t *state)
 			on_app_complete(state, delta);
 			break;
 		}
+		on_app_any(state, delta);
 
 		imgui_context_end(state->imgui);
 
