@@ -53,6 +53,7 @@ void terrain_update_mesh(terrain_t *terrain);
 void terrain_set_height(terrain_t *terrain, uint32_t x, uint32_t y, float v);
 float terrain_get_height(terrain_t *terrain, uint32_t x, uint32_t y);
 void terrain_resize(terrain_t *terrain, uvec2 size);
+void terrain_reset(terrain_t *terrain);
 uvec2 terrain_get_size(terrain_t *terrain);
 
 #endif /* __components_terrain_h__ */

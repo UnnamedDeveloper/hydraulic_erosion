@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <limits.h>
 
 #include <stb_image.h>
 
@@ -49,6 +50,7 @@ static void init_resources(app_state_t *state)
 		.scale_scalar = 0.4f,
 		.elevation = 100.0f,
 	}, &state->terrain);
+	state->config = APP_DEFAULT_CONFIGURATION;
 }
 
 static void free_resources(app_state_t *state)
@@ -70,8 +72,53 @@ static void on_app_configure(app_state_t *state, float delta)
 {
 	if (igBegin("Configuration", NULL, ImGuiWindowFlags_None))
 	{
-		if (igSmallButton("Start"))
+		// animation settings
+		if (igTreeNodeEx_Str("Animation", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			igCheckbox("Animate", &state->config.animate);
+			if (!state->config.animate) 
+			{
+				igPushItemFlag(ImGuiItemFlags_Disabled, true);
+				igPushStyleVar_Float(ImGuiStyleVar_Alpha, igGetStyle()->Alpha * 0.5f);
+			}
+
+			igSliderInt("Duration", &state->config.duration, 1, 60, "%d sec", 0);
+
+			if (!state->config.animate)
+			{
+				igPopItemFlag();
+				igPopStyleVar(1);
+			}
+
+			igTreePop();
+		}
+
+		// terrain settings
+		if (igTreeNodeEx_Str("Terrain", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bool reset = false;
+			reset |= igInputInt("Seed", &state->terrain->seed, INT_MIN, INT_MAX, ImGuiInputTextFlags_EnterReturnsTrue);
+			reset |= igDragInt2("Size", state->terrain->size.size, 1, 2, 10000, "%d", 0);
+			reset |= igDragFloat("Scale", &state->terrain->scale_scalar, 0.05f, 0.01f, 100.0f, "%.2f", 0);
+
+			if (reset)
+			{
+				terrain_reset(state->terrain);
+			}
+			igTreePop();
+		}
+
+		// simulation settings
+		if (igTreeNodeEx_Str("Simulation", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			igInputInt("Iterations", &state->config.iterations, 1, 100, 0);
+			igTreePop();
+		}
+
+		// start the simulation
+		if (igButton("Start", (ImVec2){ 0, 0 }))
+		{
+			memset(&state->sim_data, 0, sizeof(state->sim_data));
 			state->mode = APP_MODE_SIMULATE;
 		}
 	}
@@ -80,20 +127,61 @@ static void on_app_configure(app_state_t *state, float delta)
 
 static void on_app_simulate(app_state_t *state, float delta)
 {
-	run_simulation(state->terrain, 200000);
-	state->mode = APP_MODE_COMPLETE;
+	if (!state->config.animate)
+	{
+		float start = glfwGetTime();
+		run_simulation(state->terrain, state->config.iterations);
+		float end = glfwGetTime();
+
+		state->sim_data.cur_iterations = state->config.iterations;
+		state->sim_data.duration = end - start;
+		state->mode = APP_MODE_COMPLETE;
+	}
+	else
+	{
+		float delta_seconds = delta / 1000.0f;
+
+		int delta_iter = (int)((float)state->config.iterations / (float)state->config.duration) * delta_seconds;
+		int remaining_iter = state->config.iterations - state->sim_data.cur_iterations;
+		int iterations = fmin((float)remaining_iter, delta_iter);
+		run_simulation(state->terrain, iterations);
+
+		state->sim_data.cur_iterations += iterations;
+		state->sim_data.duration += delta_seconds;
+
+		if (igBegin("Simulation Data", NULL, 0))
+		{
+			float progress = ((float)state->sim_data.cur_iterations / (float)state->config.iterations);
+			igProgressBar(progress, (ImVec2){ -FLT_MIN, 0 }, "Progress");
+			igValue_Int("Iterations", state->sim_data.cur_iterations);
+			igText("Duration: %f", state->sim_data.duration);
+		}
+		igEnd();
+
+		if (state->sim_data.cur_iterations >= state->config.iterations)
+		{
+			state->mode = APP_MODE_COMPLETE;
+		}
+	}
 }
 
 static void on_app_complete(app_state_t *state, float delta)
 {
 	ImGuiIO *io = igGetIO();
-	igSetNextWindowPos((ImVec2){ io->DisplaySize.x * 0.5f, io->DisplaySize.y * 0.5f }, ImGuiCond_Always, (ImVec2){ 0.5f,0.5f });
+	igSetNextWindowPos((ImVec2){ io->DisplaySize.x * 0.5f, io->DisplaySize.y * 0.5f }, ImGuiCond_Once, (ImVec2){ 0.5f,0.5f });
 	if (igBegin("Simulation Complete", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
 	{
 		igText("Simulation complete!");
-		bool reset = igSmallButton("Reset");
+		igText("%d iterations run in %f seconds", state->sim_data.cur_iterations, state->sim_data.duration);
+		bool reset = igButton("Reset", (ImVec2){ 0, 0 }); igSameLine(0.0f, -1.0f);
+		bool continue_ = igButton("Continue", (ImVec2){ 0, 0 });
 
 		if (reset)
+		{
+			state->mode = APP_MODE_CONFIGURE;
+			terrain_reset(state->terrain);
+		}
+		else if (continue_)
 		{
 			state->mode = APP_MODE_CONFIGURE;
 		}

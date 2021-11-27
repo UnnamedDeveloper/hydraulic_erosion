@@ -299,6 +299,11 @@ void terrain_resize(terrain_t *terrain, uvec2 size)
 	terrain_update_mesh(terrain);
 }
 
+void terrain_reset(terrain_t *terrain)
+{
+	terrain_resize(terrain, terrain->size);
+}
+
 uvec2 terrain_get_size(terrain_t *terrain)
 {
 	return terrain->size;
