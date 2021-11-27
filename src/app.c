@@ -208,7 +208,15 @@ static void on_app_complete(app_state_t *state, float delta)
 
 static void on_app_any(app_state_t *state, float delta)
 {
-	if (igBegin("Statistics", NULL, 0))
+	const ImGuiViewport *viewport = igGetMainViewport();
+	ImVec2 statistics_pos = {
+		viewport->WorkPos.x + viewport->WorkSize.x - 10,
+		viewport->WorkPos.y + viewport->WorkSize.y - 10
+	};
+
+	igSetNextWindowPos(statistics_pos, ImGuiCond_Always, (ImVec2){ 1.0f, 1.0f });
+	    ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
+	if (igBegin("Statistics", NULL, window_flags))
 	{
 		igText("Deltatime: %fms", delta);
 		igText("FPS: %f", (1000.0f / delta));
