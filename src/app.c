@@ -88,6 +88,7 @@ bool app_init(app_state_t *state)
 	// setup imgui
 	state->imgui = imgui_context_create(&(imgui_context_desc_t) {
 		.window = state->window,
+		.event_bus = state->event_bus,
 	});
 
 	// initialize the resources (duh...)
