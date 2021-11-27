@@ -66,6 +66,41 @@ static void run_simulation(terrain_t *t, int iterations)
 	terrain_update_mesh(t);
 }
 
+static void on_app_configure(app_state_t *state, float delta)
+{
+	if (igBegin("Configuration", NULL, ImGuiWindowFlags_None))
+	{
+		if (igSmallButton("Start"))
+		{
+			state->mode = APP_MODE_SIMULATE;
+		}
+	}
+	igEnd();
+}
+
+static void on_app_simulate(app_state_t *state, float delta)
+{
+	run_simulation(state->terrain, 200000);
+	state->mode = APP_MODE_COMPLETE;
+}
+
+static void on_app_complete(app_state_t *state, float delta)
+{
+	ImGuiIO *io = igGetIO();
+	igSetNextWindowPos((ImVec2){ io->DisplaySize.x * 0.5f, io->DisplaySize.y * 0.5f }, ImGuiCond_Always, (ImVec2){ 0.5f,0.5f });
+	if (igBegin("Simulation Complete", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
+	{
+		igText("Simulation complete!");
+		bool reset = igSmallButton("Reset");
+
+		if (reset)
+		{
+			state->mode = APP_MODE_CONFIGURE;
+		}
+	}
+	igEnd();
+}
+
 bool app_init(app_state_t *state)
 {
 	memset(state, 0, sizeof(state));
@@ -103,17 +138,6 @@ bool app_init(app_state_t *state)
 
 void app_run(app_state_t *state)
 {
-	bool animate = true;
-
-	int total_iterations = 200000;
-	int frame_step_count = 500;
-
-	if (!animate)
-	{
-		run_simulation(state->terrain, total_iterations);
-	}
-
-	int run_iterations = 0;
 	float last_time = glfwGetTime() * 1000.0f;
 	while (state->running && window_process_events(state->window))
 	{
@@ -121,22 +145,26 @@ void app_run(app_state_t *state)
 		float current_time = glfwGetTime() * 1000.0f;
 		float delta = current_time - last_time;
 		last_time = current_time;
-		
-		// update
-		if (animate && total_iterations > run_iterations)
+
+		// start drawing to imgui
+		imgui_context_begin(state->imgui);
+
+		// run app logic
+		switch (state->mode)
 		{
-			int steps = fmin((total_iterations - run_iterations), frame_step_count);
-			run_simulation(state->terrain, steps);
-			run_iterations += steps;
+		case APP_MODE_CONFIGURE:
+			on_app_configure(state, delta);
+			break;
+		case APP_MODE_SIMULATE:
+			on_app_simulate(state, delta);
+			break;
+		case APP_MODE_COMPLETE:
+			on_app_complete(state, delta);
+			break;
 		}
 
-		// draw ui
-		imgui_context_begin(state->imgui, delta);
-
-		igShowDemoWindow(NULL);
-
 		imgui_context_end(state->imgui);
-		
+
 		// render
 		renderer_clear(&(cmd_clear_desc_t){
 			.color = { 1.0f, 1.0f, 1.0f, 1.0f },

@@ -134,7 +134,7 @@ void imgui_context_free(imgui_context_t *ctx)
 	free(ctx);
 }
 
-void imgui_context_begin(imgui_context_t *ctx, float delta)
+void imgui_context_begin(imgui_context_t *ctx)
 {
 	HE_ASSERT(ctx != NULL, "Cannot begin drawing imgui on NULL");
 	HE_ASSERT(!any_context_drawing, "Cannot begin imgui drawing while another context is active drawing");

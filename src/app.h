@@ -13,9 +13,17 @@
 
 #define APP_NAME "Hydraulic Erosion"
 
+typedef enum app_mode_t
+{
+	APP_MODE_CONFIGURE,
+	APP_MODE_SIMULATE,
+	APP_MODE_COMPLETE,
+} app_mode_t;
+
 typedef struct app_state_t
 {
 	bool running;
+	app_mode_t mode;
 
 	window_t *window;
 	event_bus_t *event_bus;

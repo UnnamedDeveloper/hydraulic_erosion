@@ -37,7 +37,7 @@ void imgui_context_init(const imgui_context_desc_t *desc, imgui_context_t **ctx)
 imgui_context_t *imgui_context_create(const imgui_context_desc_t *desc);
 void imgui_context_free(imgui_context_t *ctx);
 
-void imgui_context_begin(imgui_context_t *ctx, float delta);
+void imgui_context_begin(imgui_context_t *ctx);
 void imgui_context_end(imgui_context_t *ctx);
 void imgui_context_render(imgui_context_t *ctx);
 
