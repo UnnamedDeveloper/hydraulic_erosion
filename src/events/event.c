@@ -31,16 +31,20 @@ void event_publish(event_bus_t *bus, event_type_t type, event_t *event)
 	HE_ASSERT(bus != NULL, "Cannot publish an event to NULL");
 	HE_ASSERT(0 <= type < EVENT_TYPE_COUNT__, "Invalid event type");
 
-	for (int i = 0; i < EVENT_MAX_CALLBACKS__; i++)
+	bool handled = false;
+	for (int layer = (EVENT_LAYER_COUNT__ - 1); layer >= 0; layer--)
 	{
-		event_callback_fn_t cb = bus->callbacks[type][i];
-		void *ptr = bus->user_pointers[type][i];
-		if (cb == NULL) continue;
-		cb(bus, ptr, event);
+		for (int i = 0; i < EVENT_MAX_CALLBACKS__; i++)
+		{
+			event_callback_fn_t cb = bus->callbacks[type][layer][i];
+			void *ptr = bus->user_pointers[type][layer][i];
+			if (cb == NULL) continue;
+			handled |= cb(bus, handled, ptr, event);
+		}
 	}
 }
 
-uint32_t event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer, event_callback_fn_t callback)
+uint32_t event_subscribe(event_bus_t *bus, event_type_t type, event_cb_layer_t layer, void *user_pointer, event_callback_fn_t callback)
 {
 	HE_ASSERT(bus != NULL, "Cannot subscribe to NULL");
 	HE_ASSERT(0 <= type < EVENT_TYPE_COUNT__, "Invalid event type");
@@ -48,20 +52,20 @@ uint32_t event_subscribe(event_bus_t *bus, event_type_t type, void *user_pointer
 	uint32_t id = EVENT_MAX_CALLBACKS__;
 	for (int i = 0; i < EVENT_MAX_CALLBACKS__; i++)
 	{
-		if (bus->callbacks[type][i] == NULL)
+		if (bus->callbacks[type][layer][i] == NULL)
 			id = i;
 	}
 
 	HE_ASSERT(id != EVENT_MAX_CALLBACKS__, "Event bus callbacks exhausted");
 
-	bus->user_pointers[type][id] = user_pointer;
-	bus->callbacks[type][id] = callback;
+	bus->user_pointers[type][layer][id] = user_pointer;
+	bus->callbacks[type][layer][id] = callback;
 
 	return id;
 }
 
-void event_unsubscribe(event_bus_t *bus, event_type_t type, uint32_t id)
+void event_unsubscribe(event_bus_t *bus, event_type_t type, event_cb_layer_t layer, uint32_t id)
 {
-	bus->callbacks[type][id] = NULL;
-	bus->user_pointers[type][id] = NULL;
+	bus->callbacks[type][layer][id] = NULL;
+	bus->user_pointers[type][layer][id] = NULL;
 }

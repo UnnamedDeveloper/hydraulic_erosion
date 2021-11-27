@@ -13,10 +13,11 @@
 #include "math/noise.h"
 #include "erosion.h"
 
-static void on_window_close(event_bus_t *bus, void *user_pointer, window_close_event_t *event)
+static bool on_window_close(event_bus_t *bus, bool handled, void *user_pointer, window_close_event_t *event)
 {
 	app_state_t *state = (app_state_t *)user_pointer;
 	state->running = false;
+	return true;
 }
 
 static void init_libs()
@@ -95,7 +96,7 @@ bool app_init(app_state_t *state)
 	init_resources(state);
 
 	// subscribe to events
-	event_subscribe(state->event_bus, EVENT_TYPE_WINDOW_CLOSE, state, (event_callback_fn_t)on_window_close);
+	event_subscribe(state->event_bus, EVENT_TYPE_WINDOW_CLOSE, EVENT_LAYER_APP, state, (event_callback_fn_t)on_window_close);
 
 	return true;
 }

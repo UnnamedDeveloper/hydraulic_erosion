@@ -8,68 +8,90 @@
 #include "events/mouse_event.h"
 #include "events/window_event.h"
 
-static void on_window_resize(event_bus_t *bus, void *user_pointer, window_resize_event_t *event)
+static bool on_window_resize(event_bus_t *bus, bool handled, void *user_pointer, window_resize_event_t *event)
 {
 	camera_t *camera = (camera_t *)user_pointer;
 	camera_update_projection(camera);
+	return true;
 }
 
-static void on_mouse_move(event_bus_t *bus, void *user_pointer, mouse_move_event_t *event)
+static bool on_mouse_move(event_bus_t *bus, bool handled, void *user_pointer, mouse_move_event_t *event)
 {
-	camera_t *camera = (camera_t *)user_pointer;
-	if (camera->move)
+	if (!handled)
 	{
-		vec2 xoff = { -(event->offset[0] * camera->sensitivity), -(event->offset[1] * camera->sensitivity) };
-		glm_vec2_rotate(xoff, -glm_rad(camera->angle[0]), xoff);
+		camera_t *camera = (camera_t *)user_pointer;
+		if (camera->move)
+		{
+			vec2 xoff = { -(event->offset[0] * camera->sensitivity), -(event->offset[1] * camera->sensitivity) };
+			glm_vec2_rotate(xoff, -glm_rad(camera->angle[0]), xoff);
 
-		vec3 offset = GLM_VEC3_ZERO_INIT;
-		offset[0] += xoff[0];
-		offset[2] += xoff[1];
+			vec3 offset = GLM_VEC3_ZERO_INIT;
+			offset[0] += xoff[0];
+			offset[2] += xoff[1];
 
-		camera_move(camera, 0, offset, GLM_VEC2_ZERO);
+			camera_move(camera, 0, offset, GLM_VEC2_ZERO);
+			return true;
+		}
+		else if (camera->rotate)
+		{
+			camera_move(camera,
+				0,
+				GLM_VEC3_ZERO,
+				(vec2){
+					-event->offset[0] * camera->sensitivity,
+					event->offset[1] * camera->sensitivity
+				});
+			return true;
+		}
 	}
-	else if (camera->rotate)
-	{
-		camera_move(camera,
-			0,
-			GLM_VEC3_ZERO,
-			(vec2){
-				-event->offset[0] * camera->sensitivity,
-				event->offset[1] * camera->sensitivity
-			});
-	}
+	return false;
 }
 
-static void on_mouse_press(event_bus_t *bus, void *user_pointer, mouse_press_event_t *event)
+static bool on_mouse_press(event_bus_t *bus, bool handled, void *user_pointer, mouse_press_event_t *event)
 {
-	camera_t *camera = (camera_t *)user_pointer;
-	if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+	if (!handled)
 	{
-		camera->move = true;
+		camera_t *camera = (camera_t *)user_pointer;
+		if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			camera->move = true;
+		}
+		else if (event->button == GLFW_MOUSE_BUTTON_RIGHT)
+		{
+			camera->rotate = true;
+		}
+		return true;
 	}
-	else if (event->button == GLFW_MOUSE_BUTTON_RIGHT)
-	{
-		camera->rotate = true;
-	}
+	return false;
 }
 
-static void on_mouse_release(event_bus_t *bus, void *user_pointer, mouse_release_event_t *event)
+static bool on_mouse_release(event_bus_t *bus, bool handled, void *user_pointer, mouse_release_event_t *event)
 {
-	camera_t *camera = (camera_t *)user_pointer;
-	if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+	if (!handled)
 	{
-		camera->move = false;
+		camera_t *camera = (camera_t *)user_pointer;
+		if (event->button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			camera->move = false;
+		}
+		else if (event->button == GLFW_MOUSE_BUTTON_RIGHT)
+		{
+			camera->rotate = false;
+		}
+		return true;
 	}
-	else if (event->button == GLFW_MOUSE_BUTTON_RIGHT)
-	{
-		camera->rotate = false;
-	}
+	return false;
 }
 
-static void on_mouse_scroll(event_bus_t *bus, void *user_pointer, mouse_scroll_event_t *event)
+static bool on_mouse_scroll(event_bus_t *bus, bool handled, void *user_pointer, mouse_scroll_event_t *event)
 {
-	camera_t *camera = (camera_t *)user_pointer;
-	camera_move(camera, event->offset[1], GLM_VEC3_ZERO, GLM_VEC2_ZERO);
+	if (!handled)
+	{
+		camera_t *camera = (camera_t *)user_pointer;
+		camera_move(camera, event->offset[1], GLM_VEC3_ZERO, GLM_VEC2_ZERO);
+		return true;
+	}
+	return false;
 }
 
 static void update_camera_position(camera_t *camera)
@@ -104,11 +126,11 @@ void camera_init(const camera_desc_t *desc, camera_t **camera)
 	camera_update_projection(result);
 	update_camera_position(result);
 
-	result->resize_cb_id  = event_subscribe(desc->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, result, (event_callback_fn_t)on_window_resize);
-	result->move_cb_id    = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    result, (event_callback_fn_t)on_mouse_move);
-	result->scroll_cb_id  = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  result, (event_callback_fn_t)on_mouse_scroll);
-	result->press_cb_id   = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   result, (event_callback_fn_t)on_mouse_press);
-	result->release_cb_id = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, result, (event_callback_fn_t)on_mouse_release);
+	result->resize_cb_id  = event_subscribe(desc->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, EVENT_LAYER_WORLD, result, (event_callback_fn_t)on_window_resize);
+	result->move_cb_id    = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    EVENT_LAYER_WORLD, result, (event_callback_fn_t)on_mouse_move);
+	result->scroll_cb_id  = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  EVENT_LAYER_WORLD, result, (event_callback_fn_t)on_mouse_scroll);
+	result->press_cb_id   = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   EVENT_LAYER_WORLD, result, (event_callback_fn_t)on_mouse_press);
+	result->release_cb_id = event_subscribe(desc->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, EVENT_LAYER_WORLD, result, (event_callback_fn_t)on_mouse_release);
 
 	*camera = result;
 }
@@ -125,11 +147,11 @@ void camera_free(camera_t *camera)
 	if (camera == NULL) return;
 
 	// unsubscribe from events
-	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, camera->resize_cb_id);
-	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    camera->move_cb_id);
-	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  camera->scroll_cb_id);
-	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   camera->press_cb_id);
-	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, camera->release_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_WINDOW_RESIZE, EVENT_LAYER_WORLD, camera->resize_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_MOVE,    EVENT_LAYER_WORLD, camera->move_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_SCROLL,  EVENT_LAYER_WORLD, camera->scroll_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_PRESS,   EVENT_LAYER_WORLD, camera->press_cb_id);
+	event_unsubscribe(camera->window->event_bus, EVENT_TYPE_MOUSE_RELEASE, EVENT_LAYER_WORLD, camera->release_cb_id);
 
 	free(camera);
 }

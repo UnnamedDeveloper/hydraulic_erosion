@@ -11,41 +11,71 @@
 
 static bool any_context_drawing = false;
 
-static void on_mouse_press(event_bus_t *bus, void *user_pointer, mouse_press_event_t *event)
+static bool on_mouse_press(event_bus_t *bus, bool handled, void *user_pointer, mouse_press_event_t *event)
 {
-	ImGuiIO *io = igGetIO();
-	io->MouseDown[event->button] = true;
+	if (!handled)
+	{
+		ImGuiIO *io = igGetIO();
+		io->MouseDown[event->button] = true;
+		return io->WantCaptureMouse;
+	}
+	return false;
 }
 
-static void on_mouse_release(event_bus_t *bus, void *user_pointer, mouse_release_event_t *event)
+static bool on_mouse_release(event_bus_t *bus, bool handled, void *user_pointer, mouse_release_event_t *event)
 {
-	ImGuiIO *io = igGetIO();
-	io->MouseDown[event->button] = false;
+	if (!handled)
+	{
+		ImGuiIO *io = igGetIO();
+		io->MouseDown[event->button] = false;
+		return io->WantCaptureMouse;
+	}
+	return false;
 }
 
-static void on_mouse_scroll(event_bus_t *bus, void *user_pointer, mouse_scroll_event_t *event)
+static bool on_mouse_scroll(event_bus_t *bus, bool handled, void *user_pointer, mouse_scroll_event_t *event)
 {
-	ImGuiIO *io = igGetIO();
-	io->MouseWheelH += (float)event->offset[0];
-	io->MouseWheel += (float)event->offset[1];
+	if (!handled)
+	{
+		ImGuiIO *io = igGetIO();
+		io->MouseWheelH += (float)event->offset[0];
+		io->MouseWheel += (float)event->offset[1];
+		return io->WantCaptureMouse;
+	}
+	return false;
 }
 
-static void on_char_typed(event_bus_t *bus, void *user_pointer, char_type_event_t *event)
+static bool on_char_typed(event_bus_t *bus, bool handled, void *user_pointer, char_type_event_t *event)
 {
-	ImGuiIO *io = igGetIO();
-	ImGuiIO_AddInputCharacter(io, event->c);
+	if (!handled)
+	{
+		ImGuiIO *io = igGetIO();
+		ImGuiIO_AddInputCharacter(io, event->c);
+		return io->WantCaptureKeyboard;
+	}
+	return false;
 }
 
-static void on_key_press(event_bus_t *bus, void *user_pointer, key_press_event_t *event)
+static bool on_key_press(event_bus_t *bus, bool handled, void *user_pointer, key_press_event_t *event)
 {
-	ImGuiIO *io = igGetIO();
-	io->KeysDown[event->key] = true;
+	if (!handled)
+	{
+		ImGuiIO *io = igGetIO();
+		io->KeysDown[event->key] = true;
+		return io->WantCaptureKeyboard;
+	}
+	return false;
 }
 
-static void on_key_release(event_bus_t *bus, void *user_pointer, key_press_event_t *event)
+static bool on_key_release(event_bus_t *bus, bool handled, void *user_pointer, key_press_event_t *event)
 {
-	ImGuiIO *io = igGetIO();
-	io->KeysDown[event->key] = false;
+	if (!handled)
+	{
+		ImGuiIO *io = igGetIO();
+		io->KeysDown[event->key] = false;
+		return io->WantCaptureKeyboard;
+	}
+	return false;
 }
 
 void imgui_context_init(const imgui_context_desc_t *desc, imgui_context_t **ctx)
@@ -67,12 +97,12 @@ void imgui_context_init(const imgui_context_desc_t *desc, imgui_context_t **ctx)
 	ImGui_ImplOpenGL3_Init("#version 410 core");
 
 	// setup event callbacks
-	result->mpress_cb_id   = event_subscribe(desc->event_bus, EVENT_TYPE_MOUSE_PRESS,   NULL, (event_callback_fn_t)on_mouse_press);
-	result->mrelease_cb_id = event_subscribe(desc->event_bus, EVENT_TYPE_MOUSE_RELEASE, NULL, (event_callback_fn_t)on_mouse_release);
-	result->mscroll_cb_id  = event_subscribe(desc->event_bus, EVENT_TYPE_MOUSE_SCROLL,  NULL, (event_callback_fn_t)on_mouse_scroll);
-	result->char_cb_id     = event_subscribe(desc->event_bus, EVENT_TYPE_CHAR_TYPE,     NULL, (event_callback_fn_t)on_char_typed);
-	result->kpress_cb_id   = event_subscribe(desc->event_bus, EVENT_TYPE_KEY_PRESS,     NULL, (event_callback_fn_t)on_key_press);
-	result->krelease_cb_id = event_subscribe(desc->event_bus, EVENT_TYPE_KEY_RELEASE,   NULL, (event_callback_fn_t)on_key_release);
+	result->mpress_cb_id   = event_subscribe(desc->event_bus, EVENT_TYPE_MOUSE_PRESS,   EVENT_LAYER_UI, NULL, (event_callback_fn_t)on_mouse_press);
+	result->mrelease_cb_id = event_subscribe(desc->event_bus, EVENT_TYPE_MOUSE_RELEASE, EVENT_LAYER_UI, NULL, (event_callback_fn_t)on_mouse_release);
+	result->mscroll_cb_id  = event_subscribe(desc->event_bus, EVENT_TYPE_MOUSE_SCROLL,  EVENT_LAYER_UI, NULL, (event_callback_fn_t)on_mouse_scroll);
+	result->char_cb_id     = event_subscribe(desc->event_bus, EVENT_TYPE_CHAR_TYPE,     EVENT_LAYER_UI, NULL, (event_callback_fn_t)on_char_typed);
+	result->kpress_cb_id   = event_subscribe(desc->event_bus, EVENT_TYPE_KEY_PRESS,     EVENT_LAYER_UI, NULL, (event_callback_fn_t)on_key_press);
+	result->krelease_cb_id = event_subscribe(desc->event_bus, EVENT_TYPE_KEY_RELEASE,   EVENT_LAYER_UI, NULL, (event_callback_fn_t)on_key_release);
 
 	// set dark theme supreme
 	igStyleColorsDark(NULL);
@@ -91,12 +121,12 @@ void imgui_context_free(imgui_context_t *ctx)
 {
 	if (ctx == NULL) return;
 
-	event_unsubscribe(ctx->event_bus, EVENT_TYPE_MOUSE_PRESS,   ctx->mpress_cb_id);
-	event_unsubscribe(ctx->event_bus, EVENT_TYPE_MOUSE_RELEASE, ctx->mrelease_cb_id);
-	event_unsubscribe(ctx->event_bus, EVENT_TYPE_MOUSE_SCROLL,  ctx->mscroll_cb_id);
-	event_unsubscribe(ctx->event_bus, EVENT_TYPE_CHAR_TYPE,     ctx->char_cb_id);
-	event_unsubscribe(ctx->event_bus, EVENT_TYPE_KEY_PRESS,     ctx->kpress_cb_id);
-	event_unsubscribe(ctx->event_bus, EVENT_TYPE_KEY_RELEASE,   ctx->krelease_cb_id);
+	event_unsubscribe(ctx->event_bus, EVENT_TYPE_MOUSE_PRESS,   EVENT_LAYER_UI, ctx->mpress_cb_id);
+	event_unsubscribe(ctx->event_bus, EVENT_TYPE_MOUSE_RELEASE, EVENT_LAYER_UI, ctx->mrelease_cb_id);
+	event_unsubscribe(ctx->event_bus, EVENT_TYPE_MOUSE_SCROLL,  EVENT_LAYER_UI, ctx->mscroll_cb_id);
+	event_unsubscribe(ctx->event_bus, EVENT_TYPE_CHAR_TYPE,     EVENT_LAYER_UI, ctx->char_cb_id);
+	event_unsubscribe(ctx->event_bus, EVENT_TYPE_KEY_PRESS,     EVENT_LAYER_UI, ctx->kpress_cb_id);
+	event_unsubscribe(ctx->event_bus, EVENT_TYPE_KEY_RELEASE,   EVENT_LAYER_UI, ctx->krelease_cb_id);
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
