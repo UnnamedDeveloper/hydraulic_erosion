@@ -103,7 +103,7 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 	result->grass_threshold = 0.4f;
 	result->grass_blending = 0.2f;
 	glm_vec3_copy((vec3){ 0.0f, 1.0f, 0.0f }, result->grass_color);
-	glm_vec3_copy((vec3){ 0.8f, 0.2f, 0.1f }, result->slope_color);
+	glm_vec3_copy((vec3){ 0.7f, 0.4f, 0.3f }, result->slope_color);
 
 	terrain_init_pipeline(result);
 	terrain_init_mesh(result);
