@@ -7,6 +7,10 @@ out vec4 o_color;
 
 uniform vec3 u_light_pos;
 uniform vec3 u_camera_pos;
+uniform vec3 u_grass_color;
+uniform vec3 u_slope_color;
+uniform float u_grass_blending;
+uniform float u_grass_threshold;
 
 void main()
 {
@@ -28,13 +32,10 @@ void main()
 	float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
 	vec3 specular = specular_strength * spec * light_color;
 
-	float threshold = 0.4;
-	float grass_blending = 0.2;
-
 	float slope = 1 - norm.y;
-	float grass_blend_height = threshold - (1 - grass_blending);
-	float grass_w = 1 - ((slope - grass_blend_height) / (threshold - grass_blend_height));
-	vec3 color = vec3(0.0, 1.0, 0.0) * grass_w + vec3(0.7, 0.4, 0.3) * (1 - grass_w);
+	float grass_blend_height = u_grass_threshold - (1 - u_grass_blending);
+	float grass_w = 1 - ((slope - grass_blend_height) / (u_grass_threshold - grass_blend_height));
+	vec3 color = u_grass_color * grass_w + u_slope_color * (1 - grass_w);
 
 	o_color = vec4((ambient + diffuse + specular) * color, 1.0);
 }

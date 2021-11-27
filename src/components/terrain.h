@@ -34,6 +34,11 @@ typedef struct terrain_t
 	float scale_scalar;
 	float elevation;
 
+	vec3 grass_color;
+	vec3 slope_color;
+	float grass_threshold;
+	float grass_blending;
+
 	terrain_noise_function_t noise_function;
 
 	mesh_t *mesh;

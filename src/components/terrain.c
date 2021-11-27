@@ -55,6 +55,10 @@ static void terrain_init_pipeline(terrain_t *terrain)
 			.location[2] = {.type = UNIFORM_TYPE_MAT4,   .name = "u_projection", },
 			.location[3] = {.type = UNIFORM_TYPE_FLOAT3, .name = "u_light_pos",  },
 			.location[4] = {.type = UNIFORM_TYPE_FLOAT3, .name = "u_camera_pos", },
+			.location[5] = {.type = UNIFORM_TYPE_FLOAT3, .name = "u_grass_color", },
+			.location[6] = {.type = UNIFORM_TYPE_FLOAT3, .name = "u_slope_color", },
+			.location[7] = {.type = UNIFORM_TYPE_FLOAT,  .name = "u_grass_threshold", },
+			.location[8] = {.type = UNIFORM_TYPE_FLOAT,  .name = "u_grass_blending", },
 		},
 		.depth_test = true,
 		.culling = true,
@@ -96,6 +100,10 @@ void terrain_init(const terrain_desc_t *desc, terrain_t **terrain)
 	result->scale_scalar = desc->scale_scalar;
 	result->elevation = desc->elevation;
 	result->height_map = NULL;
+	result->grass_threshold = 0.4f;
+	result->grass_blending = 0.2f;
+	glm_vec3_copy((vec3){ 0.0f, 1.0f, 0.0f }, result->grass_color);
+	glm_vec3_copy((vec3){ 0.8f, 0.2f, 0.1f }, result->slope_color);
 
 	terrain_init_pipeline(result);
 	terrain_init_mesh(result);
@@ -148,6 +156,10 @@ void terrain_draw(camera_t *camera, vec3 light_pos, terrain_t *terrain)
 	pipeline_set_uniform_mat4(terrain->pipeline, 2, camera->projection);
 	pipeline_set_uniformf3(terrain->pipeline, 3, light_pos);
 	pipeline_set_uniformf3(terrain->pipeline, 4, camera->position);
+	pipeline_set_uniformf3(terrain->pipeline, 5, terrain->grass_color);
+	pipeline_set_uniformf3(terrain->pipeline, 6, terrain->slope_color);
+	pipeline_set_uniformf(terrain->pipeline, 7, terrain->grass_threshold);
+	pipeline_set_uniformf(terrain->pipeline, 8, terrain->grass_blending);
 
 	mesh_draw(terrain->mesh);
 

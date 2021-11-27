@@ -102,6 +102,11 @@ static void on_app_configure(app_state_t *state, float delta)
 			reset |= igDragInt2("Size", state->terrain->size.size, 1, 2, 10000, "%d", 0);
 			reset |= igDragFloat("Scale", &state->terrain->scale_scalar, 0.05f, 0.01f, 100.0f, "%.2f", 0);
 
+			igColorEdit3("Grass Color", state->terrain->grass_color, 0);
+			igColorEdit3("Slope Color", state->terrain->slope_color, 0);
+			igSliderFloat("Grass Threshold", &state->terrain->grass_threshold, 0.0f, 1.0f, "%f", 0);
+			igSliderFloat("Grass Blending", &state->terrain->grass_blending, 0.0f, 1.0f, "%f", 0);
+
 			if (reset)
 			{
 				terrain_reset(state->terrain);
