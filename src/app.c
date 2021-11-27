@@ -12,7 +12,6 @@
 #include "gfx/context.h"
 #include "gfx/renderer.h"
 #include "math/noise.h"
-#include "erosion.h"
 
 static bool on_window_close(event_bus_t *bus, bool handled, void *user_pointer, window_close_event_t *event)
 {
@@ -50,7 +49,9 @@ static void init_resources(app_state_t *state)
 		.scale_scalar = 0.4f,
 		.elevation = 100.0f,
 	}, &state->terrain);
+
 	state->config = APP_DEFAULT_CONFIGURATION;
+	state->erosion_desc = EROSION_DEFAULT_DESC;
 }
 
 static void free_resources(app_state_t *state)
@@ -59,11 +60,11 @@ static void free_resources(app_state_t *state)
 	camera_free(state->camera);
 }
 
-static void run_simulation(terrain_t *t, int iterations)
+static void run_simulation(terrain_t *t, const erosion_desc_t *params, int iterations)
 {
 	for (int i = 0; i < iterations; i++)
 	{
-		hydraulic_erosion(t);
+		hydraulic_erosion(t, params);
 	}
 	terrain_update_mesh(t);
 }
@@ -108,6 +109,22 @@ static void on_app_configure(app_state_t *state, float delta)
 			igTreePop();
 		}
 
+		// erosion settings
+		if (igTreeNodeEx_Str("Erosion", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			igInputInt("Drop Lifetime", &state->erosion_desc.drop_lifetime, 0, INT_MAX, 0);
+			igSliderFloat("Inertia", &state->erosion_desc.inertia, 0, 1, "%.2f", 0);
+			igDragFloat("Capacity Multiplier", &state->erosion_desc.capacity, 0.1f, 1.0f, FLT_MAX, "%.2f", 0);
+			igDragFloat("Minimum Capacity", &state->erosion_desc.min_capacity, 0.1f, 0.0f, FLT_MAX, "%.2f", 0);
+			igDragFloat("Deposition Speed", &state->erosion_desc.deposition, 0.1f, 0.01f, FLT_MAX, "%.2f", 0);
+			igDragFloat("Erosion Speed", &state->erosion_desc.erosion, 0.1f, 0.01f, FLT_MAX, "%.2f", 0);
+			igDragInt("Erosion Radius", &state->erosion_desc.radius, 1, 1, 100, "%d", 0);
+			igDragFloat("Gravity", &state->erosion_desc.gravity, 0.1f, 0.01f, FLT_MAX, "%.2f", 0);
+			igDragFloat("Evaporation Speed", &state->erosion_desc.evaporation, 0.1f, 0.01f, FLT_MAX, "%.2f", 0);
+
+			igTreePop();
+		}
+
 		// simulation settings
 		if (igTreeNodeEx_Str("Simulation", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -130,7 +147,7 @@ static void on_app_simulate(app_state_t *state, float delta)
 	if (!state->config.animate)
 	{
 		float start = glfwGetTime();
-		run_simulation(state->terrain, state->config.iterations);
+		run_simulation(state->terrain, &state->erosion_desc, state->config.iterations);
 		float end = glfwGetTime();
 
 		state->sim_data.cur_iterations = state->config.iterations;
@@ -144,7 +161,7 @@ static void on_app_simulate(app_state_t *state, float delta)
 		int delta_iter = (int)((float)state->config.iterations / (float)state->config.duration) * delta_seconds;
 		int remaining_iter = state->config.iterations - state->sim_data.cur_iterations;
 		int iterations = fmin((float)remaining_iter, delta_iter);
-		run_simulation(state->terrain, iterations);
+		run_simulation(state->terrain, &state->erosion_desc, iterations);
 
 		state->sim_data.cur_iterations += iterations;
 		state->sim_data.duration += delta_seconds;

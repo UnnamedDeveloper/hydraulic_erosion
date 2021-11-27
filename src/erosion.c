@@ -133,24 +133,8 @@ static float erode_terrain(terrain_t *t, vec2 pos, int radius, float amount)
 	return eroded;
 }
 
-void hydraulic_erosion(terrain_t *terrain)
+void hydraulic_erosion(terrain_t *terrain, const erosion_desc_t *params)
 {
-	// hard-coded simulation parameters, this should be moved to
-	// some UI to allow for editing the parameters
-	int s_drop_lifetime = 50;
-
-	float s_inertia = 0.05f;
-	float s_capacity = 4;
-	float s_min_capacity = 0.01f;
-
-	float s_deposition = 0.3f;
-	float s_erosion = 0.3f;
-	int s_radius = 3;
-
-	float s_gravity = 4.0f;
-
-	float s_evaporation = 0.05f;
-
 	// create a drop on a random position on the terrain
 	drop_t drop = (drop_t) {
 		.pos = { rand_x_position_on_terrain(terrain), rand_y_position_on_terrain(terrain) },
@@ -158,7 +142,7 @@ void hydraulic_erosion(terrain_t *terrain)
 		.velocity = 1.0f,
 	};
 
-	for (int iteration = 0; iteration < s_drop_lifetime; iteration++)
+	for (int iteration = 0; iteration < params->drop_lifetime; iteration++)
 	{
 		int ix = (int)drop.pos[0];
 		int iz = (int)drop.pos[1];
@@ -177,8 +161,8 @@ void hydraulic_erosion(terrain_t *terrain)
 		gradient[1] = ((neighbors[1][0] - neighbors[0][0]) * (1 - u)) + ((neighbors[1][1] - neighbors[0][1]) * u);
 
 		// calculate the direction on the drop based on its current direction as well as the slope
-		drop.direction[0] = (drop.direction[0] * s_inertia) - (gradient[0] * (1 - s_inertia));
-		drop.direction[1] = (drop.direction[1] * s_inertia) - (gradient[1] * (1 - s_inertia));
+		drop.direction[0] = (drop.direction[0] * params->inertia) - (gradient[0] * (1 - params->inertia));
+		drop.direction[1] = (drop.direction[1] * params->inertia) - (gradient[1] * (1 - params->inertia));
 		glm_vec2_normalize(drop.direction);
 
 		// move the drop
@@ -194,7 +178,7 @@ void hydraulic_erosion(terrain_t *terrain)
 		float height_dif = get_drop_height(terrain, drop.pos) - get_drop_height(terrain, old_pos);
 
 		// calculate the capacity of the droplet based on its speed, water content and the capacity modifier
-		float capacity = fmax((-height_dif) * drop.velocity * drop.water * s_capacity, s_min_capacity);
+		float capacity = fmax((-height_dif) * drop.velocity * drop.water * params->capacity, params->min_capacity);
 		HE_ASSERT(!isnan(capacity), "Failed to calculate capacity");
 
 		if (height_dif > 0)
@@ -207,19 +191,19 @@ void hydraulic_erosion(terrain_t *terrain)
 		else if (drop.sediment > capacity)
 		{
 			// deposit sediment
-			float deposit = (drop.sediment - capacity) * s_deposition;
+			float deposit = (drop.sediment - capacity) * params->deposition;
 			drop.sediment -= deposit;
 			deposit_terrain(terrain, old_pos, deposit);
 		}
 		else
 		{
 			// erode terrain
-			float erode = fmin((capacity - drop.sediment) * s_erosion, -height_dif);
-			drop.sediment += erode_terrain(terrain, old_pos, s_radius, erode);
+			float erode = fmin((capacity - drop.sediment) * params->erosion, -height_dif);
+			drop.sediment += erode_terrain(terrain, old_pos, params->radius, erode);
 		}
 
 		// update drop velocity and water content
-		drop.velocity = sqrt(drop.velocity * drop.velocity + height_dif * s_gravity);
-		drop.water *= (1 - s_evaporation);
+		drop.velocity = sqrt(drop.velocity * drop.velocity + height_dif * params->gravity);
+		drop.water *= (1 - params->evaporation);
 	}
 }

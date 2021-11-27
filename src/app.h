@@ -10,6 +10,7 @@
 #include "events/event.h"
 #include "gfx/window.h"
 #include "imgui/imgui_context.h"
+#include "erosion.h"
 
 #define APP_NAME "Hydraulic Erosion"
 
@@ -51,6 +52,7 @@ typedef struct app_state_t
 
 	app_simulation_config_t config;
 	app_simulation_data_t sim_data;
+	erosion_desc_t erosion_desc;
 
 	terrain_t *terrain;
 
