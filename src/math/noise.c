@@ -5,6 +5,13 @@
 // this noise function was mostly copied from this gist:
 // https://gist.github.com/nowl/828013
 
+static float random_2d(int seed, int x, int y)
+{
+    int d = (214013) * (seed * 7852 + x * 4153 + y * y * 6534) + 2531001;
+    d = (d >> 16) & 0x7FFF;
+    return (float)d / 32767.0f;
+}
+
 static float interpolate(float a, float b, float w)
 {
     return a + w * (b - a);
@@ -13,12 +20,6 @@ static float interpolate(float a, float b, float w)
 static float smooth_interpolate(float a, float b, float w)
 {
     return interpolate(a, b, w * w * (3.0f - 2.0f * w));
-}
-
-static float random_2d(int seed, int x, int y)
-{
-    srand(x * 62834 + y * 5733 + seed * 7521);
-    return (float) rand() / (float) RAND_MAX;
 }
 
 static float noise_2d(int seed, float x, float y)
