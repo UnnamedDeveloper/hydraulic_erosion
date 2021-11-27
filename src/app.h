@@ -9,6 +9,7 @@
 #include "components/terrain.h"
 #include "events/event.h"
 #include "gfx/window.h"
+#include "imgui/imgui_context.h"
 
 #define APP_NAME "Hydraulic Erosion"
 
@@ -18,6 +19,7 @@ typedef struct app_state_t
 
 	window_t *window;
 	event_bus_t *event_bus;
+	imgui_context_t *imgui;
 
 	terrain_t *terrain;
 

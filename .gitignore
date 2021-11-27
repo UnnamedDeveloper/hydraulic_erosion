@@ -3,6 +3,9 @@
 **/[Bb]uild/
 
 
+###ImGui###
+imgui.ini
+
 ###SublimeText###
 
 # cache files for sublime text
