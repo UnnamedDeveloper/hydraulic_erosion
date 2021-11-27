@@ -14,8 +14,15 @@ add_library(cimgui STATIC
     "deps/cimgui/imgui/imgui_widgets.cpp"
     "deps/cimgui/imgui/imgui_draw.cpp"
     "deps/cimgui/imgui/imgui_tables.cpp"
-    "deps/cimgui/imgui/imgui_demo.cpp")
-target_include_directories(cimgui INTERFACE "deps/cimgui")
+    "deps/cimgui/imgui/imgui_demo.cpp"
+    "deps/cimgui/imgui/backends/imgui_impl_glfw.cpp"
+    "deps/cimgui/imgui/backends/imgui_impl_glfw.h"
+    "deps/cimgui/imgui/backends/imgui_impl_opengl3.cpp"
+    "deps/cimgui/imgui/backends/imgui_impl_opengl3.h"
+    )
+target_include_directories(cimgui PUBLIC "deps/cimgui" "deps/cimgui/imgui" "deps/cimgui/generator/output")
+add_definitions("-DIMGUI_IMPL_API=extern \"C\" ")
+target_link_libraries(cimgui PRIVATE glfw)
 set_target_properties(cimgui PROPERTIES LINKER_LANGUAGE CXX)
 
 set(PROJECT_SOURCES
