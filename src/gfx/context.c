@@ -93,7 +93,7 @@ void context_init(const context_desc_t *desc, context_t **context)
 	{
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback(gl_debug_callback, NULL);
+		glDebugMessageCallback((GLDEBUGPROC)gl_debug_callback, NULL);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 	}
 #endif
