@@ -25,6 +25,8 @@ add_definitions("-DIMGUI_IMPL_API=extern \"C\" ")
 target_link_libraries(cimgui PRIVATE glfw)
 set_target_properties(cimgui PROPERTIES LINKER_LANGUAGE CXX)
 
+option(SHOW_CONSOLE "If the program should be compiled as a console application" OFF)
+
 set(PROJECT_SOURCES
 	"src/main.c"
 	"src/app.h" "src/app.c" "src/erosion.h" "src/erosion.c"
@@ -36,7 +38,7 @@ set(PROJECT_SOURCES
 	"src/io/file.h" "src/io/file.c"
 	"src/math/types.h" "src/math/types.c" "src/math/noise.h" "src/math/noise.c")
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if (${SHOW_CONSOLE})
 	add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 else()
 	add_executable(${PROJECT_NAME} WIN32 ${PROJECT_SOURCES})

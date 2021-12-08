@@ -6,9 +6,7 @@ cd bin
 if "%1" == "release" goto buildRelease
 if "%1" == "debug" goto buildDebug
 
-echo "Missing parameter 1"
-echo "Usage: build_win32.bat [debug/release]"
-goto exit
+goto buildIde
 
 :buildRelease
 mkdir release
@@ -20,7 +18,14 @@ goto exit
 :buildDebug
 mkdir debug
 cd debug
-cmake ..\.. -DCMAKE_BUILD_TYPE=Debug
+cmake -G "MinGW Makefiles" ..\.. -DCMAKE_BUILD_TYPE=Debug
+mingw32-make
+goto exit
+
+:buildIde
+mkdir vs
+cd vs
+cmake ..\..
 goto exit
 
 :exit
