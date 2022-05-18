@@ -27,7 +27,7 @@ To build and run this project, you will first have to download it localy. Use ei
 If you use git to clone this repository, use the following command to make sure you get the all the dependencies as well.
 
 ```
-git clone https://github.com/UnnamedDeveloper/hydraulic_erosion.git --recursive
+git clone https://github.com/jovialen/hydraulic_erosion.git --recursive
 ```
 
 You can then use the build scripts in the repository root to build the project
